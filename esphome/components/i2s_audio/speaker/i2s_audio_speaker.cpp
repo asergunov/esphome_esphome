@@ -60,6 +60,12 @@ void I2SAudioSpeaker::player_task(void *params) {
   }
 #endif
 
+#if SOC_I2S_SUPPORTS_PDM_TX
+  if (this_speaker->pdm_mode_) {
+    config.mode = (i2s_mode_t) (config.mode | I2S_MODE_PDM);
+  }
+#endif
+
   esp_err_t err = i2s_driver_install(this_speaker->parent_->get_port(), &config, 0, nullptr);
   if (err != ESP_OK) {
     event.type = TaskEventType::WARNING;

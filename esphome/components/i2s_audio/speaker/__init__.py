@@ -66,6 +66,7 @@ CONFIG_SCHEMA = cv.All(
                     ),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
+            "pdm": speaker.SPEAKER_SCHEMA.extend({}).extend(cv.COMPONENT_SCHEMA),
         },
         key=CONF_DAC_TYPE,
     ),
@@ -82,6 +83,8 @@ async def to_code(config):
 
     if config[CONF_DAC_TYPE] == "internal":
         cg.add(var.set_internal_dac_mode(config[CONF_MODE]))
+    elif config[CONF_DAC_TYPE] == "pdm":
+        cg.add(var.set_pdm_mode())
     else:
         cg.add(var.set_dout_pin(config[CONF_I2S_DOUT_PIN]))
         cg.add(var.set_external_dac_channels(2 if config[CONF_MODE] == "stereo" else 1))
