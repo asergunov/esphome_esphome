@@ -66,7 +66,12 @@ CONFIG_SCHEMA = cv.All(
                     ),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
-            "pdm": speaker.SPEAKER_SCHEMA.extend({}).extend(cv.COMPONENT_SCHEMA),
+            "pdm": speaker.SPEAKER_SCHEMA.extend(
+                {
+                    cv.GenerateID(): cv.declare_id(I2SAudioSpeaker),
+                    cv.GenerateID(CONF_I2S_AUDIO_ID): cv.use_id(I2SAudioComponent),
+                }
+            ).extend(cv.COMPONENT_SCHEMA),
         },
         key=CONF_DAC_TYPE,
     ),
