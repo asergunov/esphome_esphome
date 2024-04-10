@@ -70,6 +70,9 @@ CONFIG_SCHEMA = cv.All(
                 {
                     cv.GenerateID(): cv.declare_id(I2SAudioSpeaker),
                     cv.GenerateID(CONF_I2S_AUDIO_ID): cv.use_id(I2SAudioComponent),
+                    cv.Required(
+                        CONF_I2S_DOUT_PIN
+                    ): pins.internal_gpio_output_pin_number,
                 }
             ).extend(cv.COMPONENT_SCHEMA),
         },
@@ -90,6 +93,7 @@ async def to_code(config):
         cg.add(var.set_internal_dac_mode(config[CONF_MODE]))
     elif config[CONF_DAC_TYPE] == "pdm":
         cg.add(var.set_pdm_mode())
+        cg.add(var.set_dout_pin(config[CONF_I2S_DOUT_PIN]))
     else:
         cg.add(var.set_dout_pin(config[CONF_I2S_DOUT_PIN]))
         cg.add(var.set_external_dac_channels(2 if config[CONF_MODE] == "stereo" else 1))
