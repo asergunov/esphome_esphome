@@ -19,9 +19,6 @@ class LCD7SegmentMenuComponent : public display_menu_base::DisplayMenuComponent 
     this->columns_ = columns;
     set_rows(1);
   }
-  void set_mark_editing(uint8_t c) { this->mark_editing_ = c; }
-  void set_mark_submenu(uint8_t c) { this->mark_submenu_ = c; }
-  void set_mark_back(uint8_t c) { this->mark_back_ = c; }
 
   void setup() override;
   float get_setup_priority() const override;
@@ -34,9 +31,6 @@ class LCD7SegmentMenuComponent : public display_menu_base::DisplayMenuComponent 
 
   display_7segment_base::Display *display_;
   uint8_t columns_;
-  char mark_editing_;
-  char mark_submenu_;
-  char mark_back_;
 };
 
 }  // namespace lcd_menu_7segment
