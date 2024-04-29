@@ -2,7 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_ID,
-    CONF_DIMENSIONS,
+    CONF_LENGTH,
 )
 from esphome.core.entity_helpers import inherit_property_from
 from esphome.components import display_7segment_base
@@ -35,10 +35,6 @@ MULTI_CONF = True
 
 
 def validate_lcd_dimensions(config):
-    if config[CONF_DIMENSIONS][0] < MINIMUM_COLUMNS:
-        raise cv.Invalid(
-            f"LCD display must have at least {MINIMUM_COLUMNS} columns to be usable with the menu"
-        )
     return config
 
 
@@ -55,7 +51,7 @@ CONFIG_SCHEMA = DISPLAY_MENU_BASE_SCHEMA.extend(
 )
 
 FINAL_VALIDATE_SCHEMA = cv.All(
-    inherit_property_from(CONF_DIMENSIONS, CONF_DISPLAY_ID),
+    inherit_property_from(CONF_LENGTH, CONF_DISPLAY_ID),
     validate_lcd_dimensions,
 )
 
@@ -65,7 +61,7 @@ async def to_code(config):
     await cg.register_component(var, config)
     disp = await cg.get_variable(config[CONF_DISPLAY_ID])
     cg.add(var.set_display(disp))
-    cg.add(var.set_dimensions(config[CONF_DIMENSIONS][0], config[CONF_DIMENSIONS][1]))
+    cg.add(var.set_length(config[CONF_LENGTH]))
     await display_menu_to_code(var, config)
     cg.add(var.set_mark_selected(config[CONF_MARK_SELECTED]))
     cg.add(var.set_mark_editing(config[CONF_MARK_EDITING]))

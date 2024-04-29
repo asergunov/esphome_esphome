@@ -15,7 +15,7 @@ namespace lcd_menu_7segment {
 class LCD7SegmentsMenuComponent : public display_menu_base::DisplayMenuComponent {
  public:
   void set_display(display_7segment_base::Display *display) { this->display_ = display; }
-  void set_dimensions(uint8_t columns) {
+  void set_length(uint8_t columns) {
     this->columns_ = columns;
     set_rows(1);
   }
