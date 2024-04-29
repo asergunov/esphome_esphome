@@ -14,7 +14,7 @@ from esphome.components.display_menu_base import (
 
 CODEOWNERS = ["@asergunov"]
 
-AUTO_LOAD = ["display_menu_base"]
+AUTO_LOAD = ["display_menu_base", "display_7segment_base"]
 
 lcd_menu_7segment_ns = cg.esphome_ns.namespace("lcd_menu_7segment")
 
