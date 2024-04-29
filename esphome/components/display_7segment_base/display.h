@@ -4,6 +4,8 @@
 #include "esphome/core/time.h"
 #include "esphome/core/hal.h"
 
+#include <cstdarg>
+
 namespace esphome {
 namespace display_7segment_base {
 
