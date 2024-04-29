@@ -18,6 +18,7 @@ const uint8_t TM1637_DATA_READ_KEYS = 0x02;      //!< Read keys
 const uint8_t TM1637_DATA_AUTO_INC_ADDR = 0x00;  //!< Auto increment address
 const uint8_t TM1637_DATA_FIXED_ADDR = 0x04;     //!< Fixed address
 
+constexpr uint8_t UNKNOWN_CHAR = 0xff;
 //
 //      A
 //     ---
@@ -27,7 +28,7 @@ const uint8_t TM1637_DATA_FIXED_ADDR = 0x04;     //!< Fixed address
 //     ---
 //      D   X
 // XABCDEFG
-constexpr uint8_t ASCII_TO_RAW[95] = {
+constexpr uint8_t TM1637_ASCII_TO_RAW[95] = {
     0b00000000,    // ' ', ord 0x20
     0b10110000,    // '!', ord 0x21
     0b00100010,    // '"', ord 0x22
