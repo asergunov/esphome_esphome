@@ -20,7 +20,6 @@ lcd_menu_7segment_ns = cg.esphome_ns.namespace("lcd_menu_7segment")
 
 CONF_DISPLAY_ID = "display_id"
 
-CONF_MARK_SELECTED = "mark_selected"
 CONF_MARK_EDITING = "mark_editing"
 CONF_MARK_SUBMENU = "mark_submenu"
 CONF_MARK_BACK = "mark_back"
@@ -63,7 +62,6 @@ async def to_code(config):
     cg.add(var.set_display(disp))
     cg.add(var.set_length(config[CONF_LENGTH]))
     await display_menu_to_code(var, config)
-    cg.add(var.set_mark_selected(config[CONF_MARK_SELECTED]))
     cg.add(var.set_mark_editing(config[CONF_MARK_EDITING]))
     cg.add(var.set_mark_submenu(config[CONF_MARK_SUBMENU]))
     cg.add(var.set_mark_back(config[CONF_MARK_BACK]))
