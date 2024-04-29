@@ -1,4 +1,4 @@
-#include "lcd_menu.h"
+#include "lcd_menu_7segment.h"
 #include "esphome/core/log.h"
 #include <algorithm>
 
