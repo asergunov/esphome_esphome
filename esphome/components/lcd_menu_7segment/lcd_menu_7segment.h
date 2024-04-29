@@ -12,7 +12,7 @@ namespace lcd_menu_7segment {
 /** Class to display a hierarchical menu.
  *
  */
-class LCD7SegmentsMenuComponent : public display_menu_base::DisplayMenuComponent {
+class LCD7SegmentMenuComponent : public display_menu_base::DisplayMenuComponent {
  public:
   void set_display(display_7segment_base::Display *display) { this->display_ = display; }
   void set_length(uint8_t columns) {
