@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/core/time.h"
 
 namespace esphome {
 namespace display_7segment_base {

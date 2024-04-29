@@ -2,7 +2,6 @@
 
 #include "esphome/core/defines.h"
 #include "esphome/core/hal.h"
-#include "esphome/core/time.h"
 
 #include "esphome/components/display_7segment_base/display.h"
 

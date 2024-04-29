@@ -1,7 +1,5 @@
 #pragma once
 
-#include "esphome/core/time.h"
-
 #include "esphome/components/spi/spi.h"
 
 #include "esphome/components/display_7segment_base/display.h"
