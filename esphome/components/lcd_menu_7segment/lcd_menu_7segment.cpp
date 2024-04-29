@@ -3,7 +3,7 @@
 #include <algorithm>
 
 namespace esphome {
-namespace lcd_menu {
+namespace lcd_menu_7segment {
 
 static const char *const TAG = "7segment_menu";
 
@@ -67,5 +67,5 @@ void LCD7SegmentMenuComponent::draw_item(const display_menu_base::MenuItem *item
   this->display_->print(0, data);
 }
 
-}  // namespace lcd_menu
+}  // namespace lcd_menu_7segment
 }  // namespace esphome
