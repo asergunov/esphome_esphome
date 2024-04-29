@@ -38,11 +38,11 @@ void LCD7SegmentMenuComponent::draw_item(const display_menu_base::MenuItem *item
 
   if (this->editing_) {
     const auto &text = item->get_value_text();
-    size_t n = std::min(text.size(), (size_t) this->columns_ - text_start);
+    size_t n = std::min(text.size(), (size_t) this->columns_);
     memcpy(data, text.c_str(), n);
   } else {
     const auto &text = item->get_text();
-    size_t n = std::min(text.size(), (size_t) this->columns_ - text_start);
+    size_t n = std::min(text.size(), (size_t) this->columns_);
     memcpy(data, text.c_str(), n);
   }
   // if (item->has_value()) {
