@@ -1,4 +1,4 @@
-#include "7segment_display.h"
+#include "display.h"
 
 namespace esphome {
 namespace display_7segment_base {
