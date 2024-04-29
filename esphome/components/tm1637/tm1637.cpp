@@ -297,7 +297,7 @@ uint8_t TM1637Display::read_byte_() {
   return retval;
 }
 
-uint8_t TM1637Display::print(uint8_t start_pos, const char *str) {
+uint8_t TM1637Display::print_(uint8_t start_pos, const char *str) {
   // ESP_LOGV(TAG, "Print at %d: %s", start_pos, str);
   uint8_t pos = start_pos;
   bool use_dot = false;

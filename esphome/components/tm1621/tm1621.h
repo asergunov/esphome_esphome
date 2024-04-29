@@ -34,12 +34,10 @@ class TM1621Display : public display_7segment_base::Display {
 
   void update() override;
 
-  /// Print `str` at the given position.
-  uint8_t print(uint8_t pos, const char *str);
-
   void display();
 
  protected:
+  uint8_t print_(uint8_t pos, const char *str);
   void bit_delay_();
   void setup_pins_();
   bool send_command_(uint16_t command);

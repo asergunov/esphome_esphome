@@ -35,15 +35,13 @@ class TM1638Component : public display_7segment_base::Display {
 
   void register_listener(KeyListener *listener) { this->listeners_.push_back(listener); }
 
-  /// Print `str` at the given position.
-  uint8_t print(uint8_t pos, const char *str);
-
   void loop() override;
   uint8_t get_keys();
 
   void set_led(int led_pos, bool led_on_off);
 
  protected:
+  uint8_t print_(uint8_t pos, const char *str);
   void set_7seg_(int seg_pos, uint8_t seg_bits);
   void send_command_(uint8_t value);
   void send_command_leave_open_(uint8_t value);

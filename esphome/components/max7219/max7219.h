@@ -31,8 +31,9 @@ class MAX7219Component : public display_7segment_base::Display,
   void set_num_chips(uint8_t num_chips);
   void set_reverse(bool reverse) { this->reverse_ = reverse; };
 
+ protected:
   /// Print `str` at the given position.
-  uint8_t print(uint8_t pos, const char *str);
+  uint8_t print_(uint8_t pos, const char *str);
 
  protected:
   void send_byte_(uint8_t a_register, uint8_t data);

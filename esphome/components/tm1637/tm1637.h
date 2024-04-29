@@ -35,9 +35,6 @@ class TM1637Display : public display_7segment_base::Display {
 
   void update() override;
 
-  /// Print `str` at the given position.
-  uint8_t print(uint8_t pos, const char *str) override;
-
   void set_intensity(uint8_t intensity) { this->intensity_ = intensity; }
   void set_inverted(bool inverted) { this->inverted_ = inverted; }
   void set_length(uint8_t length) { this->length_ = length; }
@@ -51,6 +48,7 @@ class TM1637Display : public display_7segment_base::Display {
 #endif
 
  protected:
+  uint8_t print_(uint8_t pos, const char *str) override;
   void bit_delay_();
   void setup_pins_();
   bool send_byte_(uint8_t b);

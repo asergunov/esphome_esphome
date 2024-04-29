@@ -42,9 +42,9 @@ CONFIG_SCHEMA = DISPLAY_MENU_BASE_SCHEMA.extend(
         {
             cv.GenerateID(): cv.declare_id(LCD7SegmentMenuComponent),
             cv.GenerateID(CONF_DISPLAY_ID): cv.use_id(display_7segment_base.Display),
-            cv.Optional(CONF_MARK_EDITING, default=0x2A): cv.uint8_t,
-            cv.Optional(CONF_MARK_SUBMENU, default=0x7E): cv.uint8_t,
-            cv.Optional(CONF_MARK_BACK, default=0x5E): cv.uint8_t,
+            cv.Optional(CONF_MARK_EDITING, default=ord("]")): cv.uint8_t,
+            cv.Optional(CONF_MARK_SUBMENU, default=ord(">")): cv.uint8_t,
+            cv.Optional(CONF_MARK_BACK, default=ord("<")): cv.uint8_t,
         }
     )
 )

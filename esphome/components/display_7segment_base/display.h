@@ -17,7 +17,7 @@ class Display : public PollingComponent {
   uint8_t printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
 
   /// Print `str` at the given position.
-  virtual uint8_t print(uint8_t pos, const char *str) = 0;
+  uint8_t print(uint8_t pos, const char *str) { return print_(pos, str); }
 
   /// Print `str` at position 0.
   uint8_t print(const char *str);
@@ -27,6 +27,9 @@ class Display : public PollingComponent {
 
   /// Evaluate the strftime-format and print the result at position 0.
   uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
+
+ protected:
+  virtual uint8_t print_(uint8_t pos, const char *str) = 0;
 };
 
 }  // namespace display_7segment_base

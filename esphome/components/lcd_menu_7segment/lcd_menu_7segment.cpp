@@ -36,20 +36,23 @@ void LCD7SegmentMenuComponent::draw_item(const display_menu_base::MenuItem *item
     return;
   }
 
+  uint8_t text_start = 0;
   switch (item->get_type()) {
     case display_menu_base::MENU_ITEM_MENU:
-      data[this->columns_ - 1] = this->mark_submenu_;
+      data[0] = this->mark_submenu_;
+      text_start++;
       break;
     case display_menu_base::MENU_ITEM_BACK:
-      data[this->columns_ - 1] = this->mark_back_;
+      data[0] = this->mark_back_;
+      text_start++;
       break;
     default:
       break;
   }
 
   const auto &text = item->get_text();
-  size_t n = std::min(text.size(), (size_t) this->columns_ - 2);
-  memcpy(data + 1, text.c_str(), n);
+  size_t n = std::min(text.size(), (size_t) this->columns_ - text_start);
+  memcpy(data + text_start, text.c_str(), n);
 
   // if (item->has_value()) {
   //   std::string value = item->get_value_text();

@@ -148,7 +148,7 @@ void TM1638Component::set_intensity(uint8_t brightness_level) {
 
 /////////////// DISPLAY PRINT /////////////////
 
-uint8_t TM1638Component::print(uint8_t start_pos, const char *str) {
+uint8_t TM1638Component::print_(uint8_t start_pos, const char *str) {
   uint8_t pos = start_pos;
 
   bool last_was_dot = false;

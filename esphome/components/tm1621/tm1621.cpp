@@ -222,7 +222,7 @@ bool TM1621Display::send_address_(uint16_t address) {
   return true;
 }
 
-uint8_t TM1621Display::print(uint8_t start_pos, const char *str) {
+uint8_t TM1621Display::print_(uint8_t start_pos, const char *str) {
   // ESP_LOGD(TAG, "Print at %d: %s", start_pos, str);
   return snprintf(this->row_[start_pos], sizeof(this->row_[start_pos]), "%s", str);
 }
