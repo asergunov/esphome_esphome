@@ -7,9 +7,7 @@ from esphome.const import CONF_ID, CONF_INTENSITY, CONF_LAMBDA, CONF_NUM_CHIPS
 DEPENDENCIES = ["spi"]
 
 max7219_ns = cg.esphome_ns.namespace("max7219")
-MAX7219Component = max7219_ns.class_(
-    "MAX7219Component", Display, cg.PollingComponent, spi.SPIDevice
-)
+MAX7219Component = max7219_ns.class_("MAX7219Component", Display, spi.SPIDevice)
 MAX7219ComponentRef = MAX7219Component.operator("ref")
 
 CONF_REVERSE_ENABLE = "reverse_enable"

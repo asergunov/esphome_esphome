@@ -13,7 +13,7 @@ from esphome.const import (
 )
 
 tm1621_ns = cg.esphome_ns.namespace("tm1621")
-TM1621Display = tm1621_ns.class_("TM1621Display", Display, cg.PollingComponent)
+TM1621Display = tm1621_ns.class_("TM1621Display", Display)
 TM1621DisplayRef = TM1621Display.operator("ref")
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(

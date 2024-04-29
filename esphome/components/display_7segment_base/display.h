@@ -1,9 +1,11 @@
 #pragma once
 
+#include "esphome/core/component.h"
+
 namespace esphome {
 namespace display_7segment_base {
 
-class Display {
+class Display : public PollingComponent {
  public:
   /// Evaluate the printf-format and print the result at the given position.
   uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));

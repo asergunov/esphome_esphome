@@ -16,7 +16,7 @@ from esphome.const import (
 CODEOWNERS = ["@glmnet"]
 
 tm1637_ns = cg.esphome_ns.namespace("tm1637")
-TM1637Display = tm1637_ns.class_("TM1637Display", Display, cg.PollingComponent)
+TM1637Display = tm1637_ns.class_("TM1637Display", Display)
 TM1637DisplayRef = TM1637Display.operator("ref")
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(

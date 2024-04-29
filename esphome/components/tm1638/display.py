@@ -17,7 +17,7 @@ CODEOWNERS = ["@skykingjwc"]
 CONF_TM1638_ID = "tm1638_id"
 
 tm1638_ns = cg.esphome_ns.namespace("tm1638")
-TM1638Component = tm1638_ns.class_("TM1638Component", Display, cg.PollingComponent)
+TM1638Component = tm1638_ns.class_("TM1638Component", Display)
 TM1638ComponentRef = TM1638Component.operator("ref")
 
 

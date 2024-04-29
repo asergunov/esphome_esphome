@@ -1,7 +1,6 @@
 #pragma once
 
 #include "esphome/core/automation.h"
-#include "esphome/core/component.h"
 #include "esphome/core/defines.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/time.h"
@@ -22,7 +21,7 @@ class TM1638Component;
 
 using tm1638_writer_t = std::function<void(TM1638Component &)>;
 
-class TM1638Component : public display_7segment_base::Display, public PollingComponent {
+class TM1638Component : public display_7segment_base::Display {
  public:
   void set_writer(tm1638_writer_t &&writer) { this->writer_ = writer; }
   void setup() override;
