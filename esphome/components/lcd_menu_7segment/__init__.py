@@ -44,7 +44,7 @@ CONFIG_SCHEMA = DISPLAY_MENU_BASE_SCHEMA.extend(
             cv.GenerateID(CONF_DISPLAY_ID): cv.use_id(display_7segment_base.Display),
             cv.Optional(CONF_MARK_EDITING, default=ord("_")): cv.uint8_t,
             cv.Optional(CONF_MARK_SUBMENU, default=ord("]")): cv.uint8_t,
-            cv.Optional(CONF_MARK_BACK, default=ord("[]")): cv.uint8_t,
+            cv.Optional(CONF_MARK_BACK, default=ord("]")): cv.uint8_t,
         }
     )
 )
