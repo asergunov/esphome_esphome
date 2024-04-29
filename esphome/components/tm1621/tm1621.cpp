@@ -226,27 +226,6 @@ uint8_t TM1621Display::print(uint8_t start_pos, const char *str) {
   // ESP_LOGD(TAG, "Print at %d: %s", start_pos, str);
   return snprintf(this->row_[start_pos], sizeof(this->row_[start_pos]), "%s", str);
 }
-uint8_t TM1621Display::print(const char *str) { return this->print(0, str); }
-uint8_t TM1621Display::printf(uint8_t pos, const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(pos, buffer);
-  return 0;
-}
-uint8_t TM1621Display::printf(const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(buffer);
-  return 0;
-}
 
 int TM1621Display::get_command_code_(char *destination, size_t destination_size, const char *needle,
                                      const char *haystack) {

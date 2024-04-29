@@ -199,27 +199,6 @@ uint8_t MAX7219Component::print(uint8_t start_pos, const char *str) {
   }
   return pos - start_pos;
 }
-uint8_t MAX7219Component::print(const char *str) { return this->print(0, str); }
-uint8_t MAX7219Component::printf(uint8_t pos, const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(pos, buffer);
-  return 0;
-}
-uint8_t MAX7219Component::printf(const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(buffer);
-  return 0;
-}
 void MAX7219Component::set_writer(max7219_writer_t &&writer) { this->writer_ = writer; }
 void MAX7219Component::set_intensity(uint8_t intensity) {
   intensity &= 0xF;
@@ -229,15 +208,6 @@ void MAX7219Component::set_intensity(uint8_t intensity) {
   }
 }
 void MAX7219Component::set_num_chips(uint8_t num_chips) { this->num_chips_ = num_chips; }
-
-uint8_t MAX7219Component::strftime(uint8_t pos, const char *format, ESPTime time) {
-  char buffer[64];
-  size_t ret = time.strftime(buffer, sizeof(buffer), format);
-  if (ret > 0)
-    return this->print(pos, buffer);
-  return 0;
-}
-uint8_t MAX7219Component::strftime(const char *format, ESPTime time) { return this->strftime(0, format, time); }
 
 }  // namespace max7219
 }  // namespace esphome

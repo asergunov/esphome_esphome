@@ -5,6 +5,8 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/time.h"
 
+#include "esphome/components/display_7segment_base/display.h"
+
 #include <vector>
 
 #ifdef USE_BINARY_SENSOR
@@ -21,7 +23,7 @@ class TM1637Key;
 
 using tm1637_writer_t = std::function<void(TM1637Display &)>;
 
-class TM1637Display : public PollingComponent {
+class TM1637Display : public display_7segment_base::Display, public PollingComponent {
  public:
   void set_writer(tm1637_writer_t &&writer) { this->writer_ = writer; }
 
@@ -36,15 +38,8 @@ class TM1637Display : public PollingComponent {
 
   void update() override;
 
-  /// Evaluate the printf-format and print the result at the given position.
-  uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));
-  /// Evaluate the printf-format and print the result at position 0.
-  uint8_t printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
-
   /// Print `str` at the given position.
-  uint8_t print(uint8_t pos, const char *str);
-  /// Print `str` at position 0.
-  uint8_t print(const char *str);
+  uint8_t print(uint8_t pos, const char *str) override;
 
   void set_intensity(uint8_t intensity) { this->intensity_ = intensity; }
   void set_inverted(bool inverted) { this->inverted_ = inverted; }
@@ -57,11 +52,6 @@ class TM1637Display : public PollingComponent {
   uint8_t get_keys();
   void add_tm1637_key(TM1637Key *tm1637_key) { this->tm1637_keys_.push_back(tm1637_key); }
 #endif
-
-  /// Evaluate the strftime-format and print the result at the given position.
-  uint8_t strftime(uint8_t pos, const char *format, ESPTime time) __attribute__((format(strftime, 3, 0)));
-  /// Evaluate the strftime-format and print the result at position 0.
-  uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
 
  protected:
   void bit_delay_();

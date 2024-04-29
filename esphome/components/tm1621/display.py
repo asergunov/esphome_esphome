@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import display
+from esphome.components.display_7segment_base import Display
 from esphome.const import (
     CONF_DATA_PIN,
     CONF_CS_PIN,
@@ -12,7 +13,7 @@ from esphome.const import (
 )
 
 tm1621_ns = cg.esphome_ns.namespace("tm1621")
-TM1621Display = tm1621_ns.class_("TM1621Display", cg.PollingComponent)
+TM1621Display = tm1621_ns.class_("TM1621Display", Display, cg.PollingComponent)
 TM1621DisplayRef = TM1621Display.operator("ref")
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(

@@ -6,6 +6,8 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/time.h"
 
+#include "esphome/components/display_7segment_base/display.h"
+
 #include <vector>
 
 namespace esphome {
@@ -20,7 +22,7 @@ class TM1638Component;
 
 using tm1638_writer_t = std::function<void(TM1638Component &)>;
 
-class TM1638Component : public PollingComponent {
+class TM1638Component : public display_7segment_base::Display, public PollingComponent {
  public:
   void set_writer(tm1638_writer_t &&writer) { this->writer_ = writer; }
   void setup() override;
@@ -36,23 +38,11 @@ class TM1638Component : public PollingComponent {
 
   void register_listener(KeyListener *listener) { this->listeners_.push_back(listener); }
 
-  /// Evaluate the printf-format and print the result at the given position.
-  uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));
-  /// Evaluate the printf-format and print the result at position 0.
-  uint8_t printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
-
   /// Print `str` at the given position.
   uint8_t print(uint8_t pos, const char *str);
-  /// Print `str` at position 0.
-  uint8_t print(const char *str);
 
   void loop() override;
   uint8_t get_keys();
-
-  /// Evaluate the strftime-format and print the result at the given position.
-  uint8_t strftime(uint8_t pos, const char *format, ESPTime time) __attribute__((format(strftime, 3, 0)));
-  /// Evaluate the strftime-format and print the result at position 0.
-  uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
 
   void set_led(int led_pos, bool led_on_off);
 

@@ -4,6 +4,8 @@
 #include "esphome/core/defines.h"
 #include "esphome/core/hal.h"
 
+#include "esphome/components/display_7segment_base/display.h"
+
 namespace esphome {
 namespace tm1621 {
 
@@ -11,7 +13,7 @@ class TM1621Display;
 
 using tm1621_writer_t = std::function<void(TM1621Display &)>;
 
-class TM1621Display : public PollingComponent {
+class TM1621Display : public display_7segment_base::Display, public PollingComponent {
  public:
   void set_writer(tm1621_writer_t &&writer) { this->writer_ = writer; }
 
@@ -34,15 +36,8 @@ class TM1621Display : public PollingComponent {
 
   void update() override;
 
-  /// Evaluate the printf-format and print the result at the given position.
-  uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));
-  /// Evaluate the printf-format and print the result at position 0.
-  uint8_t printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
-
   /// Print `str` at the given position.
   uint8_t print(uint8_t pos, const char *str);
-  /// Print `str` at position 0.
-  uint8_t print(const char *str);
 
   void display();
 

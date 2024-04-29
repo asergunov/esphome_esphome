@@ -186,40 +186,6 @@ uint8_t TM1638Component::print(uint8_t start_pos, const char *str) {
   return pos - start_pos;
 }
 
-/////////////// PRINT /////////////////
-
-uint8_t TM1638Component::print(const char *str) { return this->print(0, str); }
-
-uint8_t TM1638Component::printf(uint8_t pos, const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(pos, buffer);
-  return 0;
-}
-uint8_t TM1638Component::printf(const char *format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char buffer[64];
-  int ret = vsnprintf(buffer, sizeof(buffer), format, arg);
-  va_end(arg);
-  if (ret > 0)
-    return this->print(buffer);
-  return 0;
-}
-
-uint8_t TM1638Component::strftime(uint8_t pos, const char *format, ESPTime time) {
-  char buffer[64];
-  size_t ret = time.strftime(buffer, sizeof(buffer), format);
-  if (ret > 0)
-    return this->print(pos, buffer);
-  return 0;
-}
-uint8_t TM1638Component::strftime(const char *format, ESPTime time) { return this->strftime(0, format, time); }
-
 //////////////// SPI   ////////////////
 
 void TM1638Component::send_command_(uint8_t value) {

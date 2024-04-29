@@ -1,13 +1,14 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display, spi
+from esphome.components.display_7segment_base import Display
 from esphome.const import CONF_ID, CONF_INTENSITY, CONF_LAMBDA, CONF_NUM_CHIPS
 
 DEPENDENCIES = ["spi"]
 
 max7219_ns = cg.esphome_ns.namespace("max7219")
 MAX7219Component = max7219_ns.class_(
-    "MAX7219Component", cg.PollingComponent, spi.SPIDevice
+    "MAX7219Component", Display, cg.PollingComponent, spi.SPIDevice
 )
 MAX7219ComponentRef = MAX7219Component.operator("ref")
 

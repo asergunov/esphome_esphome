@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import display
+from esphome.components.display_7segment_base import Display
 from esphome.const import (
     CONF_ID,
     CONF_INTENSITY,
@@ -16,7 +17,7 @@ CODEOWNERS = ["@skykingjwc"]
 CONF_TM1638_ID = "tm1638_id"
 
 tm1638_ns = cg.esphome_ns.namespace("tm1638")
-TM1638Component = tm1638_ns.class_("TM1638Component", cg.PollingComponent)
+TM1638Component = tm1638_ns.class_("TM1638Component", Display, cg.PollingComponent)
 TM1638ComponentRef = TM1638Component.operator("ref")
 
 
