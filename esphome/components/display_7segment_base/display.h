@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/time.h"
+#include "esphome/core/hal.h"
 
 namespace esphome {
 namespace display_7segment_base {

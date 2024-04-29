@@ -1,7 +1,6 @@
 #pragma once
 
 #include "esphome/core/defines.h"
-#include "esphome/core/hal.h"
 
 #include "esphome/components/display_7segment_base/display.h"
 
