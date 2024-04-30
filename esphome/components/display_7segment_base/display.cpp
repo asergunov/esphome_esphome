@@ -259,8 +259,10 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     ESP_LOGD(TAG, "Partial ucode %x", ucode);
   }
 
-  if (ucode == 0)
+  if (ucode == 0) {
+    ESP_LOGD(TAG, "ucode is zero. It was the last symbol");
     return nullptr;
+  }
 
   if (ucode >= ' ' && ucode <= '~') {
     segments = progmem_read_byte(&ASCII_TO_SEGMENTS[ucode - ' ']);
