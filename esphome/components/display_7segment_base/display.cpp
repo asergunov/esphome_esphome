@@ -214,8 +214,10 @@ uint8_t Display::strftime(const char *format, ESPTime time) { return this->strft
 const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   uint32_t ucode = *(str++);
   // Find first octet
-  while ((ucode & 0b11000000) == 0b10000000)
+  while ((ucode & 0b11000000) == 0b10000000) {
+    ESP_LOGD(TAG, "Skipping middle octet %x", ucode);
     ucode = *(str++);
+  }
 
   // Read U+ code
   uint8_t octets = 1;
@@ -231,13 +233,16 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     ucode &= ~bit;
   }
 
+  ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
+
   for (; octets > 1; --octets) {
     if ((uint8_t(*str) & 0b11000000) != 0b10000000) {
-      ESP_LOGE(TAG, "utf-8: bad octet");
+      ESP_LOGE(TAG, "utf-8: bad octet %x", uint8_t(*str));
       return str;
     }
     ucode <<= 6;
     ucode |= uint8_t(*(str++)) & 0b00111111;
+    ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
   }
 
   if (ucode == 0)
