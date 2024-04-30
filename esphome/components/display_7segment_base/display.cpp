@@ -222,7 +222,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   ESP_LOGD(TAG, "First byte is %x", ucode);
 
   // Read U+ code
-  uint8_t octets = 1;
+  uint8_t octets = 0;
   for (uint8_t bit = 0b10000000;; bit >>= 1, ++octets) {
     ESP_LOGD(TAG, "Checking bit %x", bit);
     if (bit == 0) {
@@ -253,8 +253,8 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     octet &= 0b00111111;
     ESP_LOGD(TAG, "Meaningfull bits are %x", octet);
 
-    ucode <<= 6;
-    ucode |= octet;
+    ucode <<= uint32_t(6);
+    ucode |= uint32_t(octet);
     ESP_LOGD(TAG, "Partial ucode %x", octets, ucode);
   }
 
