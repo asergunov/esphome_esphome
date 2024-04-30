@@ -194,7 +194,7 @@ uint8_t TM1637Display::print_(uint8_t start_pos, const char *str) {
   // ESP_LOGV(TAG, "Print at %d: %s", start_pos, str);
   uint8_t pos = start_pos;
   bool use_dot = false;
-  for (; str && *str != '\0'; str++) {
+  for (; str && *str != '\0';) {
     uint8_t data = UNKNOWN_CHAR;
     str = char_to_segments_(str, data);
 
