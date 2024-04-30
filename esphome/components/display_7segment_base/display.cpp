@@ -256,7 +256,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
 
     ucode <<= uint32_t(6);
     ucode |= uint32_t(octet);
-    ESP_LOGD(TAG, "Partial ucode %x", octets, ucode);
+    ESP_LOGD(TAG, "Partial ucode %x", ucode);
   }
 
   if (ucode == 0)
