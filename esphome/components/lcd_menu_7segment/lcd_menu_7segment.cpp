@@ -27,23 +27,18 @@ void LCD7SegmentMenuComponent::dump_config() {
 }
 
 void LCD7SegmentMenuComponent::draw_item(const display_menu_base::MenuItem *item, uint8_t row, bool selected) {
-  char data[this->columns_ + 1];  // Bounded to 65 through the config
+  const size_t data_size = this->columns_ * 4;
+  char data[data_size + 1];  // Bounded to 65 through the config
 
-  memset(data, ' ', this->columns_);
+  memset(data, ' ', data_size);
 
   if (!selected) {
     return;
   }
 
-  if (this->editing_) {
-    const auto &text = item->get_value_text();
-    size_t n = std::min(text.size(), (size_t) this->columns_);
-    memcpy(data, text.c_str(), n);
-  } else {
-    const auto &text = item->get_text();
-    size_t n = std::min(text.size(), (size_t) this->columns_);
-    memcpy(data, text.c_str(), n);
-  }
+  const auto &text = this->editing_ ? item->get_value_text() : item->get_text();
+  size_t n = std::min(text.size(), data_size);
+  memcpy(data, text.c_str(), n);
   // if (item->has_value()) {
   //   std::string value = item->get_value_text();
 
@@ -55,7 +50,7 @@ void LCD7SegmentMenuComponent::draw_item(const display_menu_base::MenuItem *item
   //   data[this->columns_ - 2] = ']';
   // }
 
-  data[this->columns_] = '\0';
+  data[n] = '\0';
 
   this->display_->print(0, data);
 }
