@@ -15,7 +15,6 @@ static const uint8_t TM1638_REGISTER_DISPLAYOFF = 0x80;
 static const uint8_t TM1638_REGISTER_DISPLAYON = 0x88;
 static const uint8_t TM1638_REGISTER_7SEG_0 = 0xC0;
 static const uint8_t TM1638_REGISTER_LED_0 = 0xC1;
-static const uint8_t TM1638_UNKNOWN_CHAR = 0b11111111;
 
 static const uint8_t TM1638_SHIFT_DELAY = 4;  // clock pause between commands, default 4ms
 
@@ -153,15 +152,7 @@ uint8_t TM1638Component::print_(uint8_t start_pos, const char *str) {
 
   bool last_was_dot = false;
 
-  for (; *str != '\0'; str++) {
-    uint8_t data = TM1638_UNKNOWN_CHAR;
-
-    if (*str >= ' ' && *str <= '~') {
-      data = progmem_read_byte(&TM1638Translation::SEVEN_SEG[*str - 32]);  // subract 32 to account for ASCII offset
-    } else if (data == TM1638_UNKNOWN_CHAR) {
-      ESP_LOGW(TAG, "Encountered character '%c' with no TM1638 representation while translating string!", *str);
-    }
-
+  for (; str && *str != '\0'; str++) {
     if (*str == '.')  // handle dots
     {
       if (pos != start_pos &&
@@ -177,7 +168,7 @@ uint8_t TM1638Component::print_(uint8_t start_pos, const char *str) {
         ESP_LOGI(TAG, "TM1638 String is too long for the display!");
         break;
       }
-      this->buffer_[pos] = data;
+      str = char_to_segments_(str, this->buffer_[pos]);
       last_was_dot = false;  // clear dot tracking bit
     }
 
