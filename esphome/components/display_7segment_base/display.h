@@ -30,7 +30,8 @@ class Display : public PollingComponent {
   /// Evaluate the strftime-format and print the result at position 0.
   uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
 
-  /// Convert utf-8 char to 7 segments. 0bXABCDEFG
+  /// Convert utf-8 char to 7 segments 0bXABCDEFG representation. UNKNOWN_CHAR is returned if no coversion performed.
+  /// Returns the pointer to next char or nullptr for empty `str`
   ///
   ///      A
   ///     ---
