@@ -11,6 +11,8 @@ namespace display_7segment_base {
 
 class Display : public PollingComponent {
  public:
+  static constexpr uint8_t UNKNOWN_CHAR = 0xff;
+
   /// Evaluate the printf-format and print the result at the given position.
   uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));
   /// Evaluate the printf-format and print the result at position 0.
@@ -29,7 +31,6 @@ class Display : public PollingComponent {
   uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
 
  protected:
-  static constexpr uint8_t UNKNOWN_CHAR = 0xff;
   const char *char_to_segments_(const char *str, uint8_t &segments);
   virtual uint8_t print_(uint8_t pos, const char *str) = 0;
 };
