@@ -242,13 +242,20 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
 
   for (; octets > 1; --octets) {
-    if ((uint8_t(*str) & 0b11000000) != 0b10000000) {
-      ESP_LOGE(TAG, "utf-8: bad octet %x", uint8_t(*str));
+    uint8_t octet = *(str++);
+    ESP_LOGD(TAG, "Parsing octet %x", octet);
+
+    if ((octet & 0b11000000) != 0b10000000) {
+      ESP_LOGE(TAG, "utf-8: bad octet %x", octet);
       return str;
     }
+
+    octet &= 0b00111111;
+    ESP_LOGD(TAG, "Meaningfull bits are %x", octet);
+
     ucode <<= 6;
-    ucode |= uint8_t(*(str++)) & 0b00111111;
-    ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
+    ucode |= octet;
+    ESP_LOGD(TAG, "Partial ucode %x", octets, ucode);
   }
 
   if (ucode == 0)
