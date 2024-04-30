@@ -264,6 +264,8 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     return nullptr;
   }
 
+  ESP_LOGD(TAG, "Final ucode is %x", ucode);
+
   if (ucode >= ' ' && ucode <= '~') {
     segments = progmem_read_byte(&ASCII_TO_SEGMENTS[ucode - ' ']);
   } else if (ucode >= 0x0410 && ucode < 0x0450) {
@@ -275,6 +277,8 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   if (segments == UNKNOWN_CHAR) {
     ESP_LOGW(TAG, "Encountered character '%c' with no representation while translating string!", *str);
   }
+
+  ESP_LOGD(TAG, "The rest of the sting is %s", str);
 
   return str;
 }
