@@ -21,7 +21,6 @@ float LCD7SegmentMenuComponent::get_setup_priority() const { return setup_priori
 void LCD7SegmentMenuComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "7segment Menu");
   ESP_LOGCONFIG(TAG, "  Columns: %u, Rows: %u", this->columns_, this->rows_);
-  ESP_LOGCONFIG(TAG, "  Mark characters: %02x, %02x, %02x", this->mark_editing_, this->mark_submenu_, this->mark_back_);
   if (this->is_failed()) {
     ESP_LOGE(TAG, "The connected display failed, the menu is disabled!");
   }
