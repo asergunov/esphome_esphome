@@ -223,7 +223,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
 
   // Read U+ code
   uint8_t octets = 0;
-  for (uint8_t bit = 0b10000000;; bit >>= 1, ++octets) {
+  for (uint8_t bit = 0b10000000;; bit >>= 1) {
     ESP_LOGD(TAG, "Checking bit %x", bit);
     if (bit == 0) {
       ESP_LOGE(TAG, "utf-8: to many octets");
@@ -232,9 +232,9 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
 
     if (0 == (bit & ucode)) {
       ESP_LOGD(TAG, "The bit is not set. Break.");
-      --octets;
       break;
     }
+    ++octets;
     // reset bit
     ucode &= ~bit;
     ESP_LOGD(TAG, "Unset the bit. Got %x", ucode);
