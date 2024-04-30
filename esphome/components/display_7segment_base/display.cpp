@@ -5,7 +5,7 @@ namespace display_7segment_base {
 
 static const char *const TAG = "display.display_7segment_base";
 
-using UNKNOWN_CHAR = Display::UNKNOWN_CHAR;
+constexpr auto UNKNOWN_CHAR = Display::UNKNOWN_CHAR;
 
 //
 //      A
