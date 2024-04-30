@@ -1,6 +1,7 @@
 #include "display.h"
 
 #include "esphome/core/log.h"
+#include "esphome/core/helpers.h"
 
 namespace esphome {
 namespace display_7segment_base {
@@ -212,51 +213,18 @@ uint8_t Display::strftime(uint8_t pos, const char *format, ESPTime time) {
 uint8_t Display::strftime(const char *format, ESPTime time) { return this->strftime(0, format, time); }
 
 const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
-  uint32_t ucode = *(str++);
-  // Find first octet
-  while ((ucode & 0b11000000) == 0b10000000) {
-    ESP_LOGVV(TAG, "Skipping middle octet %x", ucode);
-    ucode = *(str++);
+  uint32_t ucode = utf8_peek(str);
+  while (ucode == UTF8_UNEXPECTED_CONTINIOUS) {
+    ESP_LOGW(TAG, "Skipping continious octet");
+    ucode = utf8_peek(str);
   }
-
-  ESP_LOGVV(TAG, "First byte is %x", ucode);
-
-  // Read U+ code
-  uint8_t octets = 0;
-  for (uint8_t bit = 0b10000000;; bit >>= 1) {
-    ESP_LOGVV(TAG, "Checking bit %x", bit);
-    if (bit == 0) {
-      ESP_LOGE(TAG, "utf-8: to many octets");
+  switch (ucode) {
+    case UTF8_MISSING_OCTET:
+      ESP_LOGW(TAG, "missing octet");
       return str;
-    }
-
-    if (0 == (bit & ucode)) {
-      ESP_LOGVV(TAG, "The bit is not set. Break.");
-      break;
-    }
-    ++octets;
-    // reset bit
-    ucode &= ~bit;
-    ESP_LOGVV(TAG, "Unset the bit. Got %x", ucode);
-  }
-
-  ESP_LOGVV(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
-
-  for (; octets > 1; --octets) {
-    uint8_t octet = *(str++);
-    ESP_LOGVV(TAG, "Parsing octet %x", octet);
-
-    if ((octet & 0b11000000) != 0b10000000) {
-      ESP_LOGE(TAG, "utf-8: bad octet %x", octet);
+    case UTF8_OVERLONG:
+      ESP_LOGE(TAG, "utf-8 overlong");
       return str;
-    }
-
-    octet &= 0b00111111;
-    ESP_LOGVV(TAG, "Meaningfull bits are %x", octet);
-
-    ucode <<= uint32_t(6);
-    ucode |= uint32_t(octet);
-    ESP_LOGVV(TAG, "Partial ucode %x", ucode);
   }
 
   if (ucode == 0) {

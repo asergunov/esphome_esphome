@@ -294,6 +294,14 @@ std::string __attribute__((format(printf, 1, 3))) str_snprintf(const char *fmt, 
 /// sprintf-like function returning std::string.
 std::string __attribute__((format(printf, 1, 2))) str_sprintf(const char *fmt, ...);
 
+using ucode_type = uint32_t;
+constexpr ucode_type UTF8_BOM = 0b1111111011111111;
+constexpr ucode_type UTF8_ERROR = 0x80000000;
+constexpr ucode_type UTF8_MISSING_OCTET = UTF8_ERROR + 1;
+constexpr ucode_type UTF8_UNEXPECTED_CONTINIOUS = UTF8_ERROR + 2;
+constexpr ucode_type UTF8_OVERLONG = UTF8_ERROR + 3;
+ucode_type utf8_peek(const char *&str);
+
 ///@}
 
 /// @name Parsing & formatting

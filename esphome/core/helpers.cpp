@@ -325,6 +325,41 @@ std::string str_sprintf(const char *fmt, ...) {
   return str;
 }
 
+ucode_type utf8_peek(const char *&str) {
+  ucode_type ucode = *(str++);
+  uint8_t octets = 0;
+  for (uint8_t bit = 0b10000000;; bit >>= 1) {
+    if (octets > 4) {
+      return UTF8_OVERLONG;
+    }
+
+    if (0 == (bit & ucode)) {
+      break;
+    }
+
+    ++octets;
+    // reset bit
+    ucode &= ~bit;
+  }
+
+  if (octets == 1) {
+    return UTF8_UNEXPECTED_CONTINIOUS;
+  }
+
+  for (; octets > 1; --octets) {
+    uint8_t octet = *(str++);
+    if ((octet & 0b11000000) != 0b10000000) {
+      return UTF8_MISSING_OCTET;
+    }
+
+    octet &= 0b00111111;
+    ucode <<= uint32_t(6);
+    ucode |= uint32_t(octet);
+  }
+
+  return ucode;
+}
+
 // Parsing & formatting
 
 size_t parse_hex(const char *str, size_t length, uint8_t *data, size_t count) {
