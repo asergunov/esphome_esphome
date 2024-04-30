@@ -215,36 +215,36 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   uint32_t ucode = *(str++);
   // Find first octet
   while ((ucode & 0b11000000) == 0b10000000) {
-    ESP_LOGD(TAG, "Skipping middle octet %x", ucode);
+    ESP_LOGVV(TAG, "Skipping middle octet %x", ucode);
     ucode = *(str++);
   }
 
-  ESP_LOGD(TAG, "First byte is %x", ucode);
+  ESP_LOGVV(TAG, "First byte is %x", ucode);
 
   // Read U+ code
   uint8_t octets = 0;
   for (uint8_t bit = 0b10000000;; bit >>= 1) {
-    ESP_LOGD(TAG, "Checking bit %x", bit);
+    ESP_LOGVV(TAG, "Checking bit %x", bit);
     if (bit == 0) {
       ESP_LOGE(TAG, "utf-8: to many octets");
       return str;
     }
 
     if (0 == (bit & ucode)) {
-      ESP_LOGD(TAG, "The bit is not set. Break.");
+      ESP_LOGVV(TAG, "The bit is not set. Break.");
       break;
     }
     ++octets;
     // reset bit
     ucode &= ~bit;
-    ESP_LOGD(TAG, "Unset the bit. Got %x", ucode);
+    ESP_LOGVV(TAG, "Unset the bit. Got %x", ucode);
   }
 
-  ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
+  ESP_LOGVV(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
 
   for (; octets > 1; --octets) {
     uint8_t octet = *(str++);
-    ESP_LOGD(TAG, "Parsing octet %x", octet);
+    ESP_LOGVV(TAG, "Parsing octet %x", octet);
 
     if ((octet & 0b11000000) != 0b10000000) {
       ESP_LOGE(TAG, "utf-8: bad octet %x", octet);
@@ -252,19 +252,19 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     }
 
     octet &= 0b00111111;
-    ESP_LOGD(TAG, "Meaningfull bits are %x", octet);
+    ESP_LOGVV(TAG, "Meaningfull bits are %x", octet);
 
     ucode <<= uint32_t(6);
     ucode |= uint32_t(octet);
-    ESP_LOGD(TAG, "Partial ucode %x", ucode);
+    ESP_LOGVV(TAG, "Partial ucode %x", ucode);
   }
 
   if (ucode == 0) {
-    ESP_LOGD(TAG, "ucode is zero. It was the last symbol");
+    ESP_LOGVV(TAG, "ucode is zero. It was the last symbol");
     return nullptr;
   }
 
-  ESP_LOGD(TAG, "Final ucode is %x", ucode);
+  ESP_LOGVV(TAG, "Final ucode is %x", ucode);
 
   if (ucode >= ' ' && ucode <= '~') {
     segments = progmem_read_byte(&ASCII_TO_SEGMENTS[ucode - ' ']);
@@ -278,7 +278,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     ESP_LOGW(TAG, "Encountered character '%c' with no representation while translating string!", *str);
   }
 
-  ESP_LOGD(TAG, "The rest of the sting is %s", str);
+  ESP_LOGVV(TAG, "The rest of the sting is %s", str);
 
   return str;
 }
