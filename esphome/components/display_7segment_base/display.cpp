@@ -212,6 +212,51 @@ uint8_t Display::strftime(uint8_t pos, const char *format, ESPTime time) {
 }
 uint8_t Display::strftime(const char *format, ESPTime time) { return this->strftime(0, format, time); }
 
+namespace {
+using ucode_type = uint32_t;
+constexpr ucode_type UTF8_BOM = 0b1111111011111111;
+constexpr ucode_type UTF8_ERROR = 0x80000000;
+constexpr ucode_type UTF8_MISSING_OCTET = UTF8_ERROR + 1;
+constexpr ucode_type UTF8_UNEXPECTED_CONTINIOUS = UTF8_ERROR + 2;
+constexpr ucode_type UTF8_OVERLONG = UTF8_ERROR + 3;
+ucode_type utf8_peek(const char *&str);
+
+ucode_type utf8_peek(const char *&str) {
+  ucode_type ucode = *(str++);
+  uint8_t octets = 0;
+  for (uint8_t bit = 0b10000000;; bit >>= 1) {
+    if (octets > 4) {
+      return UTF8_OVERLONG;
+    }
+
+    if (0 == (bit & ucode)) {
+      break;
+    }
+
+    ++octets;
+    // reset bit
+    ucode &= ~bit;
+  }
+
+  if (octets == 1) {
+    return UTF8_UNEXPECTED_CONTINIOUS;
+  }
+
+  for (; octets > 1; --octets) {
+    uint8_t octet = *(str++);
+    if ((octet & 0b11000000) != 0b10000000) {
+      return UTF8_MISSING_OCTET;
+    }
+
+    octet &= 0b00111111;
+    ucode <<= uint32_t(6);
+    ucode |= uint32_t(octet);
+  }
+
+  return ucode;
+}
+}  // namespace
+
 const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   uint32_t ucode = utf8_peek(str);
   while (ucode == UTF8_UNEXPECTED_CONTINIOUS) {
