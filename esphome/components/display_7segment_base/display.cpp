@@ -232,6 +232,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
 
     if (0 == (bit & ucode)) {
       ESP_LOGD(TAG, "The bit is not set. Break.");
+      --octets;
       break;
     }
     // reset bit
