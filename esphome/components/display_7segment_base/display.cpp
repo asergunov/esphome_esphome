@@ -247,7 +247,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
       return str;
     }
     ucode <<= 6;
-    ucode |= uint8_t(*str) && 0b00111111;
+    ucode |= uint8_t(*str) & 0b00111111;
   }
 
   if (ucode == 0)
