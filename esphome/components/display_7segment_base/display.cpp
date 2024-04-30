@@ -9,16 +9,6 @@ static const char *const TAG = "display.display_7segment_base";
 
 constexpr auto UNKNOWN_CHAR = Display::UNKNOWN_CHAR;
 
-//
-//      A
-//     ---
-//  F |   | B
-//     -G-
-//  E |   | C
-//     ---
-//      D   X
-// XABCDEFG
-
 // starts from ' ' ord 0x20
 constexpr uint8_t ASCII_TO_SEGMENTS[95] = {
     0b00000000,    // ' ', ord 0x20
