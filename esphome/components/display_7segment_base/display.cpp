@@ -238,7 +238,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     if (0 == (bit & ucode))
       break;
     // reset bit
-    ucode = ~bit & ucode;
+    ucode &= ~bit;
   }
 
   for (++str; octets > 1; --octets, ++str) {
@@ -246,7 +246,8 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
       ESP_LOGE(TAG, "utf-8: bad octet");
       return str;
     }
-    ucode = (ucode << 6) | (uint8_t(*str) && 0b00111111);
+    ucode <<= 6;
+    ucode |= uint8_t(*str) && 0b00111111;
   }
 
   if (ucode == 0)

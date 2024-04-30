@@ -196,6 +196,7 @@ uint8_t TM1637Display::print_(uint8_t start_pos, const char *str) {
   bool use_dot = false;
   for (; str && *str != '\0';) {
     uint8_t data = UNKNOWN_CHAR;
+    const auto is_dot = *str == '.';
     str = char_to_segments_(str, data);
 
     // Remap segments, for compatibility with MAX7219 segment definition which is
@@ -221,7 +222,7 @@ uint8_t TM1637Display::print_(uint8_t start_pos, const char *str) {
              ((data & 0x2) ? 0x20 : 0) |   // F
              ((data & 0x1) ? 0x40 : 0);    // G
     }
-    use_dot = *str == '.';
+    use_dot = is_dot;
     if (use_dot) {
       if ((!this->inverted_) && (pos != start_pos)) {
         this->buffer_[pos - 1] |= 0b10000000;
