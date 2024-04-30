@@ -219,18 +219,24 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     ucode = *(str++);
   }
 
+  ESP_LOGD(TAG, "First byte is %x", ucode);
+
   // Read U+ code
   uint8_t octets = 1;
-  for (uint32_t bit = 1 << 8;; bit >>= 1, ++octets) {
+  for (uint8_t bit = 0x10000000;; bit >>= 1, ++octets) {
+    ESP_LOGD(TAG, "Checking bit %x", bit);
     if (bit == 0) {
       ESP_LOGE(TAG, "utf-8: to many octets");
       return str;
     }
 
-    if (0 == (bit & ucode))
+    if (0 == (bit & ucode)) {
+      ESP_LOGD(TAG, "The bit is not set. Break.");
       break;
+    }
     // reset bit
     ucode &= ~bit;
+    ESP_LOGD(TAG, "Unset the bit. Got %x", ucode);
   }
 
   ESP_LOGD(TAG, "Expected %d octets. Partial ucode %x", octets, ucode);
