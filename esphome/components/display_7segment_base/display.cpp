@@ -222,12 +222,12 @@ uint8_t Display::strftime(uint8_t pos, const char *format, ESPTime time) {
 uint8_t Display::strftime(const char *format, ESPTime time) { return this->strftime(0, format, time); }
 
 const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
+  uint32_t ucode = *(str++);
   // Find first octet
-  while ((*str & 0b11000000) == 0b10000000)
-    str++;
+  while ((ucode & 0b11000000) == 0b10000000)
+    ucode = *(str++);
 
   // Read U+ code
-  uint32_t ucode = *str;
   uint8_t octets = 1;
   for (uint32_t bit = 1 << 8;; bit >>= 1, ++octets) {
     if (bit == 0) {
@@ -241,13 +241,13 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
     ucode &= ~bit;
   }
 
-  for (++str; octets > 1; --octets, ++str) {
+  for (; octets > 1; --octets) {
     if ((uint8_t(*str) & 0b11000000) != 0b10000000) {
       ESP_LOGE(TAG, "utf-8: bad octet");
       return str;
     }
     ucode <<= 6;
-    ucode |= uint8_t(*str) & 0b00111111;
+    ucode |= uint8_t(*(str++)) & 0b00111111;
   }
 
   if (ucode == 0)
