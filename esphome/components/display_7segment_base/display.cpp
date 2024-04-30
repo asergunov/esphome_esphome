@@ -1,5 +1,7 @@
 #include "display.h"
 
+#include "esphome/core/log.h"
+
 namespace esphome {
 namespace display_7segment_base {
 
@@ -221,7 +223,7 @@ uint8_t Display::strftime(const char *format, ESPTime time) { return this->strft
 
 const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   // Find first octet
-  while (*str & 0b11000000 == 0b10000000)
+  while ((*str & 0b11000000) == 0b10000000)
     str++;
 
   // Read U+ code
@@ -240,7 +242,7 @@ const char *Display::char_to_segments_(const char *str, uint8_t &segments) {
   }
 
   for (++str; octets > 1; --octets, ++str) {
-    if (uint8_t(*str) & 0b11000000 != 0b10000000) {
+    if ((uint8_t(*str) & 0b11000000) != 0b10000000) {
       ESP_LOGE(TAG, "utf-8: bad octet");
       return str;
     }
