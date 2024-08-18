@@ -38,11 +38,8 @@ void SNTPComponent::setup() {
     }
   }
 #ifdef USE_ESP_IDF
-  this->stop_poller();
   esp_sntp_set_sync_interval(this->get_update_interval());
 #endif
-
-  sntp_init();
 }
 void SNTPComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "SNTP Time:");
@@ -84,6 +81,12 @@ void SNTPComponent::update() {
 }
 void SNTPComponent::loop() {
 #if defined(USE_ESP_IDF)
+  if (!esp_sntp_enabled()) {
+    this->stop_poller();
+    sntp_init();
+  }
+  if (this->get_update_interval() != sntp_get_sync_interval())
+    esp_sntp_set_sync_interval(this->get_update_interval());
   if (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED)
     return;
 
@@ -104,20 +107,6 @@ void SNTPComponent::loop() {
            time.minute, time.second);
   this->time_sync_callback_.call();
 }
-#if defined(USE_ESP_IDF)
-void SNTPComponent::set_update_interval(uint32_t update_interval) {
-  const auto previous_sync_interval = sntp_get_sync_interval();
-
-  sntp_set_sync_interval(update_interval);
-  const auto new_sync_interval = sntp_get_sync_interval();
-  time::RealTimeClock::set_update_interval(new_sync_interval);
-
-  if (previous_sync_interval > new_sync_interval) {
-    sntp_restart();
-  }
-}
-uint32_t SNTPComponent::get_update_interval() const { return sntp_get_sync_interval(); }
-#endif  // defined(USE_ESP_IDF)
 void SNTPComponent::setup_servers_() {
   for (uint8_t i = 0; i < 3; ++i) {
     const auto &buff = server_name_buffer(this->servers_[i]);
