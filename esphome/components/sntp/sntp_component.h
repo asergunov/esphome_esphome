@@ -22,10 +22,6 @@ class SNTPComponent : public time::RealTimeClock {
 
   void update() override;
   void loop() override;
-#if defined(USE_ESP_IDF)
-  void set_update_interval(uint32_t update_interval) override;
-  uint32_t get_update_interval() const override;
-#endif
 
  protected:
   void setup_servers_();
