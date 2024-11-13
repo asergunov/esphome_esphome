@@ -90,6 +90,18 @@ void PIDClimate::dump_config() {
     this->autotuner_->dump_config();
   }
 }
+float PIDClimate::value_by_mode_(float value) {
+  switch (this->mode) {
+    case climate::CLIMATE_MODE_OFF:
+      return 0.0f;
+    case climate::CLIMATE_MODE_HEAT:
+      return std::max(0.0f, value);
+    case climate::CLIMATE_MODE_COOL:
+      return std::min(0.0f, value);
+    default:
+      return value;
+  }
+}
 void PIDClimate::write_output_(float value) {
   this->output_value_ = value;
 
@@ -147,11 +159,7 @@ void PIDClimate::update_pid_() {
     }
   }
 
-  if (this->mode == climate::CLIMATE_MODE_OFF) {
-    this->write_output_(0.0);
-  } else {
-    this->write_output_(value);
-  }
+  this->write_output_(this->value_by_mode_(value));
 
   if (this->do_publish_)
     this->publish_state();
