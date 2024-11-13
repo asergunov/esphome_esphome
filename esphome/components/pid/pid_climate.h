@@ -85,7 +85,7 @@ class PIDClimate : public climate::Climate, public Component {
   bool supports_heat_() const { return this->heat_output_ != nullptr; }
 
   /// Return cloest possible output value with respect to mode
-  float value_by_mode_(float value) const;
+  float clamp_value_by_mode_(float value) const;
 
   void write_output_();
 

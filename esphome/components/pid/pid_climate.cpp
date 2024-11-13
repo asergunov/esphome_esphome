@@ -89,7 +89,7 @@ void PIDClimate::dump_config() {
     this->autotuner_->dump_config();
   }
 }
-float PIDClimate::value_by_mode_(float value) {
+float PIDClimate::clamp_value_by_mode_(float value) {
   switch (this->mode) {
     case climate::CLIMATE_MODE_OFF:
       return 0.0f;
@@ -102,7 +102,7 @@ float PIDClimate::value_by_mode_(float value) {
   }
 }
 void PIDClimate::write_output_() {
-  const float value = this->value_by_mode_(this->output_value_);
+  const float value = this->clamp_value_by_mode_(this->output_value_);
 
   // first ensure outputs are off (both outputs not active at the same time)
   if (this->supports_cool_() && value >= 0)
