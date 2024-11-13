@@ -89,7 +89,7 @@ void PIDClimate::dump_config() {
     this->autotuner_->dump_config();
   }
 }
-float PIDClimate::clamp_value_by_mode_(float value) {
+float PIDClimate::clamp_value_by_mode_(float value) const {
   switch (this->mode) {
     case climate::CLIMATE_MODE_OFF:
       return 0.0f;
