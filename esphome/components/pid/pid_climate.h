@@ -87,7 +87,7 @@ class PIDClimate : public climate::Climate, public Component {
   /// Return cloest possible output value with respect to mode
   float value_by_mode_(float value) const;
 
-  void write_output_(float value);
+  void write_output_();
 
   /// The sensor used for getting the current temperature
   sensor::Sensor *sensor_;

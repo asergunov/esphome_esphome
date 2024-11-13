@@ -47,8 +47,7 @@ void PIDClimate::control(const climate::ClimateCall &call) {
     this->target_temperature = *call.get_target_temperature();
 
   // If switching to off mode, set output immediately
-  if (this->mode == climate::CLIMATE_MODE_OFF)
-    this->write_output_(0.0f);
+  this->write_output_();
 
   this->publish_state();
 }
@@ -102,8 +101,8 @@ float PIDClimate::value_by_mode_(float value) {
       return value;
   }
 }
-void PIDClimate::write_output_(float value) {
-  this->output_value_ = value;
+void PIDClimate::write_output_() {
+  const float value = this->value_by_mode_(this->output_value_);
 
   // first ensure outputs are off (both outputs not active at the same time)
   if (this->supports_cool_() && value >= 0)
@@ -159,7 +158,8 @@ void PIDClimate::update_pid_() {
     }
   }
 
-  this->write_output_(this->value_by_mode_(value));
+  this->output_value_ = value;
+  this->write_output_();
 
   if (this->do_publish_)
     this->publish_state();
