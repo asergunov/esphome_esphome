@@ -210,12 +210,12 @@ void AcDimmer::write_state(float state) {
   this->store_.value = new_value;
 
   // Enable immidiately so we don't need zero crossing detector working
-  if (this->value == 65535) {
+  if (this->store_.value == 65535) {
     // fully on, enable output immediately
-    this->gate_pin.digital_write(true);
-  } else if(this->value == 0) {
+    this->store_.gate_pin.digital_write(true);
+  } else if(this->store_.value == 0) {
     // fully off, enable output immediately
-    this->gate_pin.digital_write(false);
+    this->store_.gate_pin.digital_write(false);
   }
 }
 void AcDimmer::dump_config() {
