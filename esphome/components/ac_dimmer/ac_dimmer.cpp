@@ -208,6 +208,15 @@ void AcDimmer::write_state(float state) {
   if (new_value != 0 && this->store_.value == 0)
     this->store_.init_cycle = this->init_with_half_cycle_;
   this->store_.value = new_value;
+
+  // Enable immidiately so we don't need zero crossing detector working
+  if (this->value == 65535) {
+    // fully on, enable output immediately
+    this->gate_pin.digital_write(true);
+  } else if(this->value == 0) {
+    // fully off, enable output immediately
+    this->gate_pin.digital_write(false);
+  }
 }
 void AcDimmer::dump_config() {
   ESP_LOGCONFIG(TAG, "AcDimmer:");
