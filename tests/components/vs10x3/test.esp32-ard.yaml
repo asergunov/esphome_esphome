@@ -1,0 +1,11 @@
+spi:
+  # id: my_spi
+  clk_pin: 16
+  mosi_pin: 17
+  miso_pin: 15
+
+vs10x3:
+  # spi_id: my_spi
+  dreq_pin: 1
+  cs_pin: 2
+  dcs_pin: 3

@@ -1,0 +1,2 @@
+<<: !include ./test.esp32-ard.yaml
+<<: !include ./media_player-common.yaml
