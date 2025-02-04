@@ -24,6 +24,7 @@ CONFIG_SCHEMA = cv.All(
         },
     ),
     cv.only_with_arduino,
+    cv.only_on_esp32,
     cv.require_framework_version(
         esp8266_arduino=cv.Version(2, 5, 1),
         esp32_arduino=cv.Version(0, 0, 0),
@@ -50,5 +51,4 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await media_player.register_media_player(var, config)
-
     await cg.register_parented(var, config[CONF_VS10X3_AUDIO_ID])

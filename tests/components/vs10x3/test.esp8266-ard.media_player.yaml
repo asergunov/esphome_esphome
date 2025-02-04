@@ -1,2 +1,0 @@
-<<: !include ./test.esp8266-ard.yaml
-<<: !include ./media_player-common.yaml

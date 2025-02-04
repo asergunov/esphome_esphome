@@ -20,6 +20,8 @@ class Vs10x3AudioComponent : public Component,
   void set_cs_pin(uint8_t pin) { this->cs_pin_ = pin; }
   void set_dreq_pin(uint8_t pin) { this->dreq_pin_ = pin; }
 
+  VS1053 *get_decoder() const { return this->vs1053_.get(); }
+
  protected:
   std::unique_ptr<VS1053> vs1053_;
   uint8_t dcs_pin_;
