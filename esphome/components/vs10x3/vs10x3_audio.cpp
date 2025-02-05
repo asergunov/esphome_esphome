@@ -18,6 +18,11 @@ void Vs10x3AudioComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "   cs_pin: %d", this->cs_pin_);
   ESP_LOGCONFIG(TAG, "   dcs_pin: %d", this->dcs_pin_);
   ESP_LOGCONFIG(TAG, "   dreq_pin: %d", this->dreq_pin_);
+
+  if (this->vs1053_) {
+    ESP_LOGCONFIG(TAG, "   chip conected: %d", this->vs1053->isChipConnected());
+    ESP_LOGCONFIG(TAG, "   chip version: %d", this->vs1053->getChipVersion());
+  }
 }
 
 }  // namespace vs10x3
