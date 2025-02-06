@@ -65,7 +65,7 @@ CONFIG_SCHEMA = cv.All(
 async def to_code(config):
     cg.add_library(
         "ESP_VS1053_Library",
-        None,  # "1.1.4",
+        None,  # "1.1.5", # this version is not published, but ESP32_VS1053_Stream library can't work with previous one
         "https://github.com/baldram/ESP_VS1053_Library.git",
         # "https://github.com/asergunov/ESP_VS1053_Library.git#spi-class-instance",
     )
@@ -76,6 +76,10 @@ async def to_code(config):
     cg.add(var.set_dcs_pin(config[CONF_DCS_PIN]))
     cg.add(var.set_cs_pin(config[CONF_CS_PIN]))
     cg.add(var.set_dreq_pin(config[CONF_DREQ_PIN]))
+
+    del config[CONF_CS_PIN]
+
+    await spi.register_spi_device(var, config)
 
 
 def final_validate_schema():
