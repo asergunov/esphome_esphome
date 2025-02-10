@@ -35,19 +35,6 @@ CONFIG_SCHEMA = cv.All(
 
 
 async def to_code(config):
-    if CORE.is_esp32:
-        cg.add_library("WiFiClientSecure", None)
-        cg.add_library("HTTPClient", None)
-        cg.add_library("FS", None)
-    if CORE.is_esp8266:
-        cg.add_library("ESP8266HTTPClient", None)
-
-    cg.add_library(
-        "ESP32_VS1053_Stream",  # "celliesprojects/ESP32_VS1053_Stream",
-        None,  # "2.1.2",
-        "https://github.com/asergunov/ESP32_VS1053_Stream.git#external_vs1053",
-    )
-
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await media_player.register_media_player(var, config)

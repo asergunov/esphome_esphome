@@ -161,7 +161,7 @@ CONFIG_SCHEMA = cv.All(
                 cv.Optional(CONF_VSYNC_BACK_PORCH, default=10): cv.int_,
                 cv.Optional(CONF_VSYNC_FRONT_PORCH, default=10): cv.int_,
             }
-        ).extend(spi.spi_device_schema(cs_pin_required=False, default_data_rate=1e6))
+        ).extend(spi.spi_device_schema(cs_pin_required=False, default_data_rate=1e6, default_mode=))
     ),
     only_on_variant(supported=[const.VARIANT_ESP32S3]),
     cv.only_with_esp_idf,

@@ -1,7 +1,7 @@
-media_player:
-  platform: vs10x3
-  name: player
+# media_player:
+#   platform: vs10x3
+#   name: player
 
-wifi:
-  ssid: MySSID
-  password: password1
+# wifi:
+#   ssid: MySSID
+#   password: password1
