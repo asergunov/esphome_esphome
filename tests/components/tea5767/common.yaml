@@ -1,0 +1,8 @@
+i2c:
+  - id: i2c_ade7880
+    scl: ${scl_pin}
+    sda: ${sda_pin}
+
+tea5767:
+  i2c_id: i2c_ade7880
+
