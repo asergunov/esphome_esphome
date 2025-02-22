@@ -4,7 +4,7 @@ spi:
   mosi_pin: 13
   miso_pin: 12
 
-vs10x3:
+vs10xx:
   # spi_id: my_spi
   dreq_pin: 1
   cs_pin: 2

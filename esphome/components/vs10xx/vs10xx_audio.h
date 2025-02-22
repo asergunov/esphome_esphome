@@ -7,10 +7,8 @@
 
 #include "registers.h"
 
-class VS1053;  // TODO: to remove
-
 namespace esphome {
-namespace vs10x3 {
+namespace vs10xx {
 
 enum ModeBits {
   SM_DIFF = 1,
@@ -77,7 +75,7 @@ static constexpr std::array<Delay, static_cast<uint8_t>(Register::SCI_Count)> re
     Delay::clki(50),      // SCI_AICTRL3
 };
 
-class Vs10x3AudioComponent
+class Vs10xxAudioComponent
     : public Component,
       public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
                             static_cast<spi::SPIDataRate>(12000000 / 7)  // Worst case scenatio with miltiplier 1 for
@@ -93,6 +91,7 @@ class Vs10x3AudioComponent
     void dump_config();
     void set_spi_parent(spi::SPIComponent *parent) { DataSpiDevice::set_spi_parent(parent); }
     void set_cs_pin(GPIOPin *cs) { DataSpiDevice::set_cs_pin(cs); }
+    using DataSpiDevice::data_rate_;
   };
 
   struct InterruptData {
@@ -107,26 +106,68 @@ class Vs10x3AudioComponent
   void set_dreq_pin(InternalGPIOPin *pin) { this->dreq_pin_ = pin; }
   void set_reset_pin(GPIOPin *pin) { this->reset_pin_ = pin; }
 
-  void set_xtal_frequency(uint32_t value) { this->clki_ = this->xtali_ = value; }
+  void set_xtal_frequency(uint32_t value) { this->xtali_ = value; }
   void set_clock_multiplier(uint8_t mult, uint8_t add) {
-    const auto new_clockf =
-        (clockf_ & 0b11111000000000000) | (uint16_t(mult & 0b111) << 13) | (uint16_t(add & 0b11) << 11);
-    if (new_clockf != this->clockf_) {
-      clockf_ = new_clockf;
-      if (!in_hw_reset_) {
-        write_register_(SCI_CLOCKF, new_clockf);
-        this->clki_ = this->xtali_ * (2 + ((clockf_ >> 13) & 0b111)) / 2;
-      }
+    clockf_ << vs1xxx_registers::SC_MULT(mult) << vs1xxx_registers::SC_ADD(add);
+    if (!in_hw_reset_) {
+      write_register_(SCI_CLOCKF, clockf_.value());
+      update_clki_();
     }
   }
 
   DataDevice &get_data_device() { return data_device_; }
-  VS1053 *get_decoder() const { return nullptr; }
+  bool ready_for_data() const { return !in_hw_reset_ && dreq_is_active_(); }
+
+  size_t write_data(const uint8_t *buf, size_t max_len) {
+    data_device_.enable();
+    data_device_.write_array(buf, max_len);
+    data_device_.disable();
+
+    return max_len;
+  }
+  class DataWriter {
+    Vs10xxAudioComponent &parent_;
+
+   public:
+    DataWriter(Vs10xxAudioComponent &parent) : parent_(parent) { parent_.data_device_.enable(); }
+    ~DataWriter() { parent_.data_device_.disable(); }
+
+    size_t write(const uint8_t *buf, size_t max_len) {
+      size_t wrote = 0;
+      while (max_len > wrote && parent_.ready_for_data()) {
+        auto chunk = std::min<size_t>(32, max_len - wrote);
+        parent_.data_device_.write_array(buf + wrote, chunk);
+        wrote += chunk;
+      }
+      return wrote;
+    }
+  };
+  friend class DataWriter;
+
+  DataWriter make_writer() { return DataWriter{*this}; }
 
  protected:
+  void update_clki_();
   void wait_sci_ready_();
+
   void write_register_(Register r, uint16_t value);
   uint16_t read_register_(Register r);
+
+  template<typename REG> bool refresh_regiter_(REG &reg) {
+    auto val = this->read_register_<REG>();
+    if (reg != val) {
+      ESP_LOGV("vs10xx", "Register %d has changed from %04X to %04X", REG::REG_ADR, reg, val);
+      reg = val;
+      return true;
+    }
+    return false;
+  };
+
+  template<typename REG> void write_register_(const REG &value) {
+    write_register_(Register(REG::REG_ADR), value.value());
+  }
+  template<typename REG> REG read_register_() { return REG(read_register_(Register(REG::REG_ADR))); }
+
   bool handle_reset_();
   bool dreq_is_active_() const { return dreq_pin_->digital_read(); }
   unsigned long xtali_to_micros_(unsigned long xtali) const { return uint64_t(1000000) * xtali / xtali_; }
@@ -146,6 +187,10 @@ class Vs10x3AudioComponent
   vs1xxx_registers::SCI_MODE mode_;
   vs1xxx_registers::SCI_STATUS status_;
   vs1xxx_registers::SCI_CLOCKF clockf_;
+  vs1xxx_registers::SCI_DECODE_TIME decode_time_;
+  vs1xxx_registers::SCI_AUDATA audata_;
+  vs1xxx_registers::SCI_HDAT0 hdat0_;
+  vs1xxx_registers::SCI_HDAT1 hdat1_;
 
   unsigned long last_command_worst_duration_ = 0;
   unsigned long last_command_sent_micros_ = 0;
@@ -155,5 +200,5 @@ class Vs10x3AudioComponent
   vs1xxx_registers::SS_VER version_ = 0xff;
 };
 
-}  // namespace vs10x3
+}  // namespace vs10xx
 }  // namespace esphome

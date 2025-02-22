@@ -1,0 +1,10 @@
+http_request:
+  verify_ssl: False
+
+media_player:
+  platform: vs10xx
+  name: player
+
+wifi:
+  ssid: MySSID
+  password: password1

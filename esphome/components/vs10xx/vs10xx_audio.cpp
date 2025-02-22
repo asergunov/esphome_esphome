@@ -1,18 +1,18 @@
-#include "vs10x3_audio.h"
+#include "vs10xx_audio.h"
 
 namespace esphome {
-namespace vs10x3 {
+namespace vs10xx {
 
-static const char *const TAG = "vs10x3";
+static const char *const TAG = "vs10xx";
 
-void IRAM_ATTR HOT s_gpio_intr_rise(Vs10x3AudioComponent::InterruptData *self) {
+void IRAM_ATTR HOT s_gpio_intr_rise(Vs10xxAudioComponent::InterruptData *self) {
   self->dreq_was_active_ = true;
   self->dreq_is_active_ = true;
 }
-void IRAM_ATTR HOT s_gpio_intr_fall(Vs10x3AudioComponent::InterruptData *self) { self->dreq_is_active_ = false; }
+void IRAM_ATTR HOT s_gpio_intr_fall(Vs10xxAudioComponent::InterruptData *self) { self->dreq_is_active_ = false; }
 
-void Vs10x3AudioComponent::setup() {
-  ESP_LOGV(TAG, "Setting up vs10x3");
+void Vs10xxAudioComponent::setup() {
+  ESP_LOGV(TAG, "Setting up %s", TAG);
 
   if (this->reset_pin_)
     this->reset_pin_->setup();
@@ -33,13 +33,13 @@ void Vs10x3AudioComponent::setup() {
   this->handle_reset_();
 }
 
-void Vs10x3AudioComponent::DataDevice::dump_config() {
+void Vs10xxAudioComponent::DataDevice::dump_config() {
   ESP_LOGCONFIG(TAG, "   data_device:");
   LOG_PIN("     cs_pin: ", this->cs_);
 }
 
-void Vs10x3AudioComponent::dump_config() {
-  ESP_LOGCONFIG(TAG, "vs10x3:");
+void Vs10xxAudioComponent::dump_config() {
+  ESP_LOGCONFIG(TAG, "%s:", TAG);
   LOG_PIN("   cs_pin: ", this->cs_);
   LOG_PIN("   reset_pin: ", this->reset_pin_);
   ESP_LOGCONFIG(TAG, "   version: %d", this->version_);
@@ -51,26 +51,68 @@ void Vs10x3AudioComponent::dump_config() {
   this->data_device_.dump_config();
 }
 
-void Vs10x3AudioComponent::loop() {
+void Vs10xxAudioComponent::loop() {
   if (this->in_hw_reset_)
     if (!handle_reset_())
       return;
 
-  // const auto new_mode = this->read_register_(SCI_MODE);
-  // if (new_mode != mode_) {
-  //   ESP_LOGV(TAG, "Chip mode has changed from %04X to %04X", mode_, new_mode);
-  //   mode_ = new_mode;
-  // }
-  // const auto new_status = this->read_register_(SCI_STATUS);
-  // if (new_status != status_) {
-  //   ESP_LOGV(TAG, "Chip status has changed from %04X to %04X", status_, new_status);
-  //   status_ = new_status;
-  //   version_ = (status_ >> 4) & 0b111;
-  //   ESP_LOGV(TAG, "Chip version is %d", version_);
-  // }
+  refresh_regiter_(mode_);
+  refresh_regiter_(status_);
+  refresh_regiter_(clockf_);
+  if (refresh_regiter_(audata_)) {
+    decltype(audata_)::SC_HALF_SAMPLERATE sr;
+    audata_ >> sr;
+    ESP_LOGV(TAG,
+             "Audio data: sample rate: %d (mask: %d, begin_bit: %d, end_bit: %d), stereo: %d (mask: %d, begin_bit: %d, "
+             "end_bit: %d), sr: %d",
+             int(audata_.sample_rate()), int(decltype(audata_)::SC_HALF_SAMPLERATE::MASK),
+             int(decltype(audata_)::SC_HALF_SAMPLERATE::BEGIN_BIT), int(decltype(audata_)::SC_HALF_SAMPLERATE::END_BIT),
+             int(audata_.is_stereo()), int(decltype(audata_)::SC_CHANNELS::MASK),
+             int(decltype(audata_)::SC_CHANNELS::BEGIN_BIT), int(decltype(audata_)::SC_CHANNELS::END_BIT), int(sr));
+  }
+  refresh_regiter_(decode_time_);
+  const auto hdat1_changed = refresh_regiter_(hdat1_);
+  const auto hdat0_changed = refresh_regiter_(hdat0_);
+  if (hdat1_changed || hdat0_changed) {
+    ESP_LOGV(TAG, "protected: %d (mask: %d, begin bit: %d, end_bit: %d),",
+             int(hdat1_.read_field<decltype(hdat1_)::MP3_PROTECT_BIT>()), int(decltype(hdat1_)::MP3_PROTECT_BIT::MASK),
+             int(decltype(hdat1_)::MP3_PROTECT_BIT::BEGIN_BIT), int(decltype(hdat1_)::MP3_PROTECT_BIT::END_BIT));
+    switch (hdat1_.stream_type()) {
+      case vs1xxx_registers::StreamType::None:
+        ESP_LOGV(TAG, "Stream type: None");
+        break;
+      case vs1xxx_registers::StreamType::Wav:
+        ESP_LOGV(TAG, "Stream type: Wav");
+        break;
+      case vs1xxx_registers::StreamType::Wma:
+        ESP_LOGV(TAG, "Stream type: Wma, bitrate: %d", hdat0_.wma_bitrate());
+        break;
+      case vs1xxx_registers::StreamType::Mp3: {
+        const auto id = hdat1_.read_field<decltype(hdat1_)::MP3_ID>();
+        const auto layer = hdat1_.read_field<decltype(hdat1_)::MP3_LAYER>();
+        ESP_LOGV(TAG,
+                 "Stream type: Mp3, id: %s, layer %s, bitrate: %d, samplerate: %d, protected: %d, pad: %d, mode: %s, "
+                 "extension: %d, copyright: %d, original: %d, emphasis: %s",
+                 id.name(), layer.name(), int(hdat0_.mp3_bitrate(id)), int(hdat0_.mp3_sample_rate(id)),
+                 int(hdat1_.read_field<decltype(hdat1_)::MP3_PROTECT_BIT>()),
+                 int(hdat0_.read_field<decltype(hdat0_)::MP3_PAD_BIT>()),
+                 hdat0_.read_field<decltype(hdat0_)::MP3_MODE>().name(),
+                 int(hdat0_.read_field<decltype(hdat0_)::MP3_EXTENSION>()),
+                 int(hdat0_.read_field<decltype(hdat0_)::MP3_COPYRIGHT>()),
+                 int(hdat0_.read_field<decltype(hdat0_)::MP3_ORIGINAL>()),
+                 hdat0_.read_field<decltype(hdat0_)::MP3_EMPHASIS>().name());
+      } break;
+      case vs1xxx_registers::StreamType::Midi: {
+        ESP_LOGV(TAG, "Stream type: Midi");
+      }
+      default: {
+        ESP_LOGW(TAG, "Stream type: Unknown");
+      }
+    }
+  }
 }
 
-bool Vs10x3AudioComponent::handle_reset_() {
+bool Vs10xxAudioComponent::handle_reset_() {
   if (!in_hw_reset_)
     return true;
 
@@ -82,8 +124,10 @@ bool Vs10x3AudioComponent::handle_reset_() {
 
     mode_ = this->read_register_(SCI_MODE);
     ESP_LOGV(TAG, "Chip mode is %04X", mode_);
+    // mode_ << vs1xxx_registers::SM_STREAM(1);
+    write_register_(mode_);
 
-    for (status_ = this->read_register_(SCI_STATUS); (status_ & 0b1111) == 0xC;
+    for (status_ = this->read_register_(SCI_STATUS); (status_.value() & 0b1111) == 0xC;
          status_ = this->read_register_(SCI_STATUS)) {
       ESP_LOGV(TAG,
                "Chip status is %04X. Reading status again. VS1003 was seen returning 0x000C in short time on startup.",
@@ -99,11 +143,9 @@ bool Vs10x3AudioComponent::handle_reset_() {
     }
 
     clockf_ << vs1xxx_registers::SC_FREQ::from_hz(this->xtali_);
-    ESP_LOGV(TAG, "Writing clockf %04x", clockf_);
-    this->write_register_(SCI_CLOCKF, clockf_);
-    vs1xxx_registers::SC_MULT mult;
-    clockf_ >> mult;
-    this->clki_ = mult.clki_for_xtali(this->xtali_);
+    ESP_LOGV(TAG, "Writing clockf %04x", clockf_.value());
+    this->write_register_(SCI_CLOCKF, clockf_.value());
+    update_clki_();
 
     return true;
   }
@@ -128,7 +170,7 @@ bool Vs10x3AudioComponent::handle_reset_() {
   return false;
 }
 
-void Vs10x3AudioComponent::wait_sci_ready_() {
+void Vs10xxAudioComponent::wait_sci_ready_() {
   if (last_command_worst_duration_ == 0) {
     ESP_LOGVV(TAG, "Comand was not sent");
     // Don't have anything executing
@@ -156,7 +198,7 @@ void Vs10x3AudioComponent::wait_sci_ready_() {
   }
 }
 
-void Vs10x3AudioComponent::write_register_(Register r, uint16_t value) {
+void Vs10xxAudioComponent::write_register_(Register r, uint16_t value) {
   wait_sci_ready_();
   this->enable();
   const auto &reg = static_cast<uint8_t>(r);
@@ -169,7 +211,7 @@ void Vs10x3AudioComponent::write_register_(Register r, uint16_t value) {
   this->last_command_worst_duration_ = 1 + this->delay_to_micros_(delay);
 }
 
-uint16_t Vs10x3AudioComponent::read_register_(Register r) {
+uint16_t Vs10xxAudioComponent::read_register_(Register r) {
   wait_sci_ready_();
   this->enable();
   const uint8_t data[2] = {0b11, static_cast<uint8_t>(r)};
@@ -185,5 +227,25 @@ uint16_t Vs10x3AudioComponent::read_register_(Register r) {
   return static_cast<uint16_t>(result[0]) << 8 | result[1];
 }
 
-}  // namespace vs10x3
+void Vs10xxAudioComponent::update_clki_() {
+  vs1xxx_registers::SC_MULT mult;
+  clockf_ >> mult;
+  this->clki_ = mult.clki_for_xtali(this->xtali_);
+
+  ESP_LOGV(TAG, "CLKI is %d", this->clki_);
+
+  this->spi_teardown();
+  this->data_device_.spi_teardown();
+
+  this->set_data_rate(this->clki_ / 7);
+  this->data_device_.set_data_rate(this->clki_ / 4);
+
+  ESP_LOGV(TAG, "Command interface speed %d, Data interface speed is %d", this->data_rate_,
+           this->data_device_.data_rate_);
+
+  this->spi_setup();
+  this->data_device_.spi_setup();
+}
+
+}  // namespace vs10xx
 }  // namespace esphome

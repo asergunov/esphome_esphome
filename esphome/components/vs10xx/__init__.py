@@ -2,46 +2,37 @@ from esphome import pins
 import esphome.codegen as cg
 from esphome.components import spi
 import esphome.config_validation as cv
-from esphome.const import (
-    CONF_CS_PIN,
-    CONF_ID,
-    CONF_RESET_PIN,
-    CONF_SPI_ID,
-    KEY_CORE,
-    KEY_TARGET_PLATFORM,
-    PLATFORM_RP2040,
-)
-from esphome.core import CORE
+from esphome.const import CONF_CS_PIN, CONF_ID, CONF_RESET_PIN, CONF_SPI_ID
 from esphome.cpp_generator import MockObjClass
 import esphome.final_validate as fv
 
 CODEOWNERS = ["@setosha"]
 CONF_DCS_PIN = "dcs_pin"
 CONF_DREQ_PIN = "dreq_pin"
-CONF_VS10X3_AUDIO_ID = "vs10x3_audio_id"
+CONF_VS10XX_AUDIO_ID = "vs10xx_audio_id"
 CONF_XTAL_FREQUENCY = "xtal_frequency"
 CONF_CLOCK_MULTIPLIER = "clock_multiplier"
 CONF_CLOCK_MULTIPLIER_ADD = "clock_multiplier_add"
 
-vs10x3_ns = cg.esphome_ns.namespace("vs10x3")
-Vs10x3AudioComponent = vs10x3_ns.class_(
-    "Vs10x3AudioComponent", cg.Component, spi.SPIDevice
+vs10xx_ns = cg.esphome_ns.namespace("vs10xx")
+Vs10xxAudioComponent = vs10xx_ns.class_(
+    "Vs10xxAudioComponent", cg.Component, spi.SPIDevice
 )
 
 
-def vs10x3_audio_component_schema(
+def vs10xx_audio_component_schema(
     class_: MockObjClass,
 ):
     return cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(class_),
-            cv.GenerateID(CONF_VS10X3_AUDIO_ID): cv.use_id(Vs10x3AudioComponent),
+            cv.GenerateID(CONF_VS10XX_AUDIO_ID): cv.use_id(Vs10xxAudioComponent),
         }
     )
 
 
-async def register_vs10x3_audio_component(var, config):
-    await cg.register_parented(var, config[CONF_VS10X3_AUDIO_ID])
+async def register_vs10xx_audio_component(var, config):
+    await cg.register_parented(var, config[CONF_VS10XX_AUDIO_ID])
 
 
 def closest_spi_rate(rate):
@@ -55,7 +46,7 @@ CONFIG_SCHEMA = spi.spi_device_schema(
 ).extend(
     cv.Schema(
         {
-            cv.GenerateID(): cv.declare_id(Vs10x3AudioComponent),
+            cv.GenerateID(): cv.declare_id(Vs10xxAudioComponent),
             cv.Required(CONF_DCS_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
             cv.Required(CONF_DREQ_PIN): pins.internal_gpio_input_pin_schema,
@@ -64,7 +55,7 @@ CONFIG_SCHEMA = spi.spi_device_schema(
                 cv.frequency, cv.Range(min=12e6, max=13e6)
             ),
             cv.Optional(CONF_CLOCK_MULTIPLIER, default=3.0): cv.one_of(
-                *((x + 1) * 0.5 for x in range(0, 8)), float=True
+                *((x + 1) * 0.5 for x in range(0, 9)), float=True
             ),
             cv.Optional(CONF_CLOCK_MULTIPLIER_ADD, default=1.5): cv.one_of(
                 *(x * 0.5 for x in range(0, 4)), float=True
@@ -88,7 +79,7 @@ async def to_code(config):
 
     cg.add(
         var.set_clock_multiplier(
-            config[CONF_CLOCK_MULTIPLIER] * 2 - 1, config[CONF_CLOCK_MULTIPLIER_ADD] * 2
+            config[CONF_CLOCK_MULTIPLIER] * 2 - 2, config[CONF_CLOCK_MULTIPLIER_ADD] * 2
         )
     )
 
@@ -110,7 +101,7 @@ async def to_code(config):
 
 
 def final_validate_schema():
-    name = "vs10x3"
+    name = "vs10xx"
     return cv.Schema(
         {
             cv.Required(
