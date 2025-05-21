@@ -256,6 +256,15 @@ void AsyncWebServerResponse::addHeader(const char *name, const char *value) {
 
 void AsyncResponseStream::print(float value) { this->print(to_string(value)); }
 
+void AsyncResponseStream::print(const char *str) {
+  httpd_resp_send_chunk(*this->req_, str, HTTPD_RESP_USE_STRLEN);
+}
+
+void AsyncResponseStream::print(const std::string &str) {
+  httpd_resp_send_chunk(*this->req_, str.c_str(), str.size()); 
+}
+
+
 void AsyncResponseStream::printf(const char *fmt, ...) {
   va_list args;
 

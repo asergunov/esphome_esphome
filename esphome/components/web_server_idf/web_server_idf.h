@@ -74,16 +74,13 @@ class AsyncResponseStream : public AsyncWebServerResponse {
  public:
   AsyncResponseStream(const AsyncWebServerRequest *req) : AsyncWebServerResponse(req) {}
 
-  const char *get_content_data() const override { return this->content_.c_str(); };
-  size_t get_content_size() const override { return this->content_.size(); };
+  const char *get_content_data() const override { return nullptr; };
+  size_t get_content_size() const override { return 0; };
 
-  void print(const char *str) { this->content_.append(str); }
-  void print(const std::string &str) { this->content_.append(str); }
+  void print(const char *str);
+  void print(const std::string &str);
   void print(float value);
   void printf(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-
- protected:
-  std::string content_;
 };
 
 class AsyncWebServerResponseProgmem : public AsyncWebServerResponse {
