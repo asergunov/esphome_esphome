@@ -254,14 +254,38 @@ void AsyncWebServerResponse::addHeader(const char *name, const char *value) {
   httpd_resp_set_hdr(*this->req_, name, value);
 }
 
+size_t AsyncResponseStream::write(const char *str, size_t count) {
+  const auto toCopy = std::min(count, this->buffer_.capacity() - this->buffer_.size());
+  memcpy(this->buffer_.data()+this->buffer_.size(), str, toCopy);
+  this->buffer_.resize(this->buffer_.size() + toCopy);
+  if(this->buffer_.size() == this->buffer_.capacity()) {
+    ESP_LOGVV(TAG, "AsyncResponseStream::write: sending chunk");
+    httpd_resp_send_chunk(*this->req_, this->buffer_.data(), this->buffer_.size());
+    this->buffer_.resize(0);
+  }
+  return toCopy;
+}
+
 void AsyncResponseStream::print(float value) { this->print(to_string(value)); }
 
 void AsyncResponseStream::print(const char *str) {
-  httpd_resp_send_chunk(*this->req_, str, HTTPD_RESP_USE_STRLEN);
+  auto remains = strlen(str);
+  while(remains) {
+    const auto written = this->write(str, remains);
+    ESP_LOGVV(TAG, "AsyncResponseStream::print: written %lu bytes", written);
+    remains -= written;
+    str += written;
+  }
 }
 
 void AsyncResponseStream::print(const std::string &str) {
-  httpd_resp_send_chunk(*this->req_, str.c_str(), str.size()); 
+  auto remains = str.size();
+  const auto* p = str.data();
+  while(remains) {
+    const auto written = this->write(p, remains);
+    remains -= written;
+    p += written;
+  }
 }
 
 
