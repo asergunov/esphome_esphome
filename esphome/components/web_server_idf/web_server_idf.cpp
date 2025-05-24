@@ -1,6 +1,8 @@
 #ifdef USE_ESP_IDF
 
 #include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
@@ -157,11 +159,7 @@ void AsyncWebServerRequest::send(AsyncWebServerResponse *response) {
 
 void AsyncWebServerRequest::send(int code, const char *content_type, const char *content) {
   this->init_response_(nullptr, code, content_type);
-  if (content) {
-    httpd_resp_send(*this, content, HTTPD_RESP_USE_STRLEN);
-  } else {
-    httpd_resp_send(*this, nullptr, 0);
-  }
+  httpd_resp_send(*this, content, content ? HTTPD_RESP_USE_STRLEN : 0);
 }
 
 void AsyncWebServerRequest::redirect(const std::string &url) {
@@ -171,18 +169,15 @@ void AsyncWebServerRequest::redirect(const std::string &url) {
 }
 
 void AsyncWebServerRequest::init_response_(AsyncWebServerResponse *rsp, int code, const char *content_type) {
-  httpd_resp_set_status(*this, code == 200   ? HTTPD_200
-                               : code == 404 ? HTTPD_404
-                               : code == 409 ? HTTPD_409
-                                             : to_string(code).c_str());
-
+  rsp->setCode(code);  
+  
   if (content_type && *content_type) {
-    httpd_resp_set_type(*this, content_type);
+    rsp->setContentType(content_type);
   }
-  httpd_resp_set_hdr(*this, "Accept-Ranges", "none");
+  rsp->addHeader("Accept-Ranges", "none");
 
   for (const auto &pair : DefaultHeaders::Instance().headers_) {
-    httpd_resp_set_hdr(*this, pair.first.c_str(), pair.second.c_str());
+    rsp->addHeader(*this, pair.first.c_str(), pair.second.c_str());
   }
 
   delete this->rsp_;
@@ -254,40 +249,80 @@ void AsyncWebServerResponse::addHeader(const char *name, const char *value) {
   httpd_resp_set_hdr(*this->req_, name, value);
 }
 
-size_t AsyncResponseStream::write(const char *str, size_t count) {
-  const auto toCopy = std::min(count, this->buffer_.capacity() - this->buffer_.size());
-  memcpy(this->buffer_.data()+this->buffer_.size(), str, toCopy);
-  this->buffer_.resize(this->buffer_.size() + toCopy);
-  if(this->buffer_.size() == this->buffer_.capacity()) {
-    ESP_LOGVV(TAG, "AsyncResponseStream::write: sending chunk");
-    httpd_resp_send_chunk(*this->req_, this->buffer_.data(), this->buffer_.size());
-    this->buffer_.resize(0);
+void AsyncWebServerResponse::setCode(int code) {
+  httpd_resp_set_status(*this->req_, this->status_string_(code));
+}
+
+void AsyncWebServerResponse::setContentLength(size_t len);
+void AsyncWebServerResponse::setContentType(const char* type) {
+  httpd_resp_set_type(*this, type);
+}
+void AsyncWebServerResponse::status_string_(int code) {
+  [] {
+    switch (code) {
+      case 200:
+        return HTTPD_200;
+      case 204:
+        return HTTPD_204;
+      case 207:
+        return HTTPD_207;
+      case 400:
+        return HTTPD_400;
+      case 404:
+        return HTTPD_404;
+      case 408:
+        return HTTPD_408;
+      case 500:
+        return HTTPD_500;
+      default:
+        this->custom_status_ = to_string(code);
+        return this->custom_status_.c_str();
+    }
   }
-  return toCopy;
+}
+
+AsyncResponseStream(const AsyncWebServerRequest *req, const char *content_type, const char *status)
+    : AsyncWebServerResponse(req), content_type_(content_type), status_(status) {
+      
+    }
+
+void AsyncResponseStream::addHeader(const char *name, const char *value) {
+  if (this->in_progress_) {
+    ESP_LOGE(TAG, "Can't set headers in the middle of request");
+  }
+  this->headers_.emplace_back(name, value);
+}
+
+size_t AsyncResponseStream::write(const char *str, size_t length) {
+  if
+
+
+  const auto sent = httpd_send(*this->req_, str, length);
+  switch (sent) {
+    case HTTPD_SOCK_ERR_INVALID:
+    case HTTPD_SOCK_ERR_TIMEOUT:
+    case HTTPD_SOCK_ERR_FAIL:
+      ESP_LOGE(TAG, "httpd_send failed: %s", esp_err_to_name(sent));
+      return 0;
+    default:
+      return sent;
+  }
 }
 
 void AsyncResponseStream::print(float value) { this->print(to_string(value)); }
 
-void AsyncResponseStream::print(const char *str) {
-  auto remains = strlen(str);
-  while(remains) {
-    const auto written = this->write(str, remains);
+void AsyncResponseStream::print(const char *str, size_t length) {
+  while (length) {
+    const auto written = this->write(str, length);
     ESP_LOGVV(TAG, "AsyncResponseStream::print: written %lu bytes", written);
-    remains -= written;
+    length -= written;
     str += written;
   }
 }
 
-void AsyncResponseStream::print(const std::string &str) {
-  auto remains = str.size();
-  const auto* p = str.data();
-  while(remains) {
-    const auto written = this->write(p, remains);
-    remains -= written;
-    p += written;
-  }
-}
+void AsyncResponseStream::print(const char *str) { this->print(str, strlen(str)); }
 
+void AsyncResponseStream::print(const std::string &str) { this->print(str.data(), str.size()); }
 
 void AsyncResponseStream::printf(const char *fmt, ...) {
   va_list args;

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #ifdef USE_ESP_IDF
 
 #include <esp_http_server.h>
@@ -41,13 +42,22 @@ class AsyncWebServerResponse {
   virtual ~AsyncWebServerResponse() {}
 
   // NOLINTNEXTLINE(readability-identifier-naming)
-  void addHeader(const char *name, const char *value);
+  virtual void addHeader(const char *name, const char *value);
+
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  void setCode(int code);
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  void setContentLength(size_t len);
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  void setContentType(const char *type);
 
   virtual const char *get_content_data() const = 0;
   virtual size_t get_content_size() const = 0;
 
  protected:
   const AsyncWebServerRequest *req_;
+  const char *status_string_(int code);
+  std::string custom_status_;  // We have to manage the memory of custom status buffer
 };
 
 class AsyncWebServerResponseEmpty : public AsyncWebServerResponse {
@@ -72,22 +82,32 @@ class AsyncWebServerResponseContent : public AsyncWebServerResponse {
 
 class AsyncResponseStream : public AsyncWebServerResponse {
  public:
-  AsyncResponseStream(const AsyncWebServerRequest *req, size_t bufferSize) : AsyncWebServerResponse(req) {
-    this->buffer_.reserve(bufferSize);
-  }
+  AsyncResponseStream(const AsyncWebServerRequest *req);
 
-  const char *get_content_data() const override { return this->buffer_.data(); };
-  size_t get_content_size() const override { return this->buffer_.size(); };
+  const char *get_content_data() const override { return nullptr; };
+  size_t get_content_size() const override { return 0; };
 
-  size_t write(const char *str, size_t remains);
+  void addHeader(const char *name, const char *value) override;
+
+  size_t write(const char *str, size_t length);
 
   void print(const char *str);
+  void print(const char *str, size_t length);
   void print(const std::string &str);
   void print(float value);
   void printf(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
-protected:
-  std::string buffer_;
+ protected:
+  // Since we mimic httpd_resp_set_hdr behaviour the client in charge of lifetime of these pointers
+  /// Content-Type
+  const char *content_type_ = nullptr;
+  /// Status
+  const char *status = nullptr;
+  /// Headers
+  std::vector<std::pair<const char *, const char *>> headers_;
+  /// If response already in progress
+  /// we should send headers only once
+  bool in_progress_ = false;
 };
 
 class AsyncWebServerResponseProgmem : public AsyncWebServerResponse {
@@ -143,8 +163,8 @@ class AsyncWebServerRequest {
     return res;
   }
   // NOLINTNEXTLINE(readability-identifier-naming)
-  AsyncResponseStream *beginResponseStream(const char *content_type, size_t buffer_size = 1460) {
-    auto *res = new AsyncResponseStream(this, buffer_size);  // NOLINT(cppcoreguidelines-owning-memory)
+  AsyncResponseStream *beginResponseStream(const char *content_type) {
+    auto *res = new AsyncResponseStream(this);  // NOLINT(cppcoreguidelines-owning-memory)
     this->init_response_(res, 200, content_type);
     return res;
   }
@@ -183,7 +203,7 @@ class AsyncWebHandler;
 
 class AsyncWebServer {
  public:
-  AsyncWebServer(uint16_t port) : port_(port){};
+  AsyncWebServer(uint16_t port) : port_(port) {};
   ~AsyncWebServer() { this->end(); }
 
   // NOLINTNEXTLINE(readability-identifier-naming)
