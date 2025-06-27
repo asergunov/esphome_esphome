@@ -104,6 +104,27 @@ void Canbus::loop() {
     }
   }
 }
+constexpr uint32_t BITS_IN_KBIT = 1000;
+static constexpr std::array<uint32_t, 21> BITS_PER_SECOND{
+    BITS_IN_KBIT * 1,    BITS_IN_KBIT * 5,   BITS_IN_KBIT * 10,  BITS_IN_KBIT * 12,
+    BITS_IN_KBIT * 16,   BITS_IN_KBIT * 20,  BITS_IN_KBIT * 25,  (BITS_IN_KBIT * 31) + (BITS_IN_KBIT / 4),
+    BITS_IN_KBIT * 33,   BITS_IN_KBIT * 40,  BITS_IN_KBIT * 50,  BITS_IN_KBIT * 80,
+    BITS_IN_KBIT * 83,   BITS_IN_KBIT * 95,  BITS_IN_KBIT * 100, BITS_IN_KBIT * 125,
+    BITS_IN_KBIT * 200,  BITS_IN_KBIT * 250, BITS_IN_KBIT * 500, BITS_IN_KBIT * 800,
+    BITS_IN_KBIT * 1000,
+};
+
+uint32_t Canbus::set_bits_per_second(uint32_t arg) {
+  const auto *i = std::ranges::lower_bound(BITS_PER_SECOND, arg);
+  if (i == BITS_PER_SECOND.end()) {
+    --i;
+  }
+  const auto fixed_bitrate = static_cast<CanSpeed>(std::distance(BITS_PER_SECOND.begin(), i));
+  set_bitrate(fixed_bitrate);
+  return *i;
+}
+
+uint32_t Canbus::get_bits_per_second() const { return BITS_PER_SECOND[this->get_bitrate()]; }
 
 }  // namespace canbus
 }  // namespace esphome

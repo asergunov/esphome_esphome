@@ -60,6 +60,10 @@ class ESP32Can : public canbus::Canbus {
     this->tx_enqueue_timeout_ticks_ = pdMS_TO_TICKS(tx_enqueue_timeout_ms);
   }
   void set_tx_mode(TXMode mode) { this->g_config_.mode = static_cast<twai_mode_t>(mode); }
+  TXMode get_tx_mode() const { return static_cast<TXMode>(this->g_config_.mode); }
+
+  void set_enabled(bool arg) { this->enabled_ = arg; }
+  bool get_enabled() const { return this->enabled_; }
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
   void sleep_allow_pd(bool arg) { this->g_config_.general_flags.sleep_allow_pd = arg ? 1 : 0; }
 #endif
@@ -97,6 +101,7 @@ class ESP32Can : public canbus::Canbus {
   twai_filter_config_t f_config_ = TWAI_FILTER_CONFIG_ACCEPT_ALL();
   twai_timing_config_t t_config_;
   optional<twai_general_config_t> initialized_g_config_;
+  bool enabled_ = true;
 #ifdef USE_CAN_DEBUGGER
   CallbackManager<void(const twai_general_config_t &g_config, const twai_timing_config_t &t_config,
                        const twai_filter_config_t &f_config, esp_err_t err)>

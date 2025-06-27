@@ -79,6 +79,9 @@ class Canbus : public Component {
   void set_can_id(uint32_t can_id) { this->can_id_ = can_id; }
   void set_use_extended_id(bool use_extended_id) { this->use_extended_id_ = use_extended_id; }
   void set_bitrate(CanSpeed bit_rate) { this->bit_rate_ = bit_rate; }
+  CanSpeed get_bitrate() const { return this->bit_rate_; }
+  virtual uint32_t get_bits_per_second() const;
+  virtual uint32_t set_bits_per_second(uint32_t arg);
 
   void add_trigger(CanbusTrigger *trigger);
   /**

@@ -111,7 +111,7 @@ bool ESP32Can::setup_internal() {
 #endif
 
   ESP_LOGV(TAG, "Finding bitrate");
-  if (!get_bitrate(this->bit_rate_, &this->t_config_)) {
+  if (!esp32_can::get_bitrate(this->bit_rate_, &this->t_config_)) {
     ESP_LOGE(TAG, "invalid bit rate");
     this->mark_failed();
     return false;
@@ -186,15 +186,18 @@ void ESP32Can::loop() {
     ESP_LOGI(TAG, "Configuration changed. Reinitializing");
     twai_stop();
     twai_driver_uninstall();
-
     this->install_and_start_();
   }
-#if defined(USE_SENSOR) || defined(USE_TEXT_SENSOR)
   twai_status_info_t status;
   const auto err = twai_get_status_info(&status);
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "Failed to get status info: %s", esp_err_to_name(err));
   } else {
+    if (status.state == TWAI_STATE_STOPPED && this->enabled_) {
+      twai_start();
+    } else if (status.state == TWAI_STATE_RUNNING && !this->enabled_) {
+      twai_stop();
+    }
 #ifdef USE_SENSOR
     if (this->msgs_to_tx_sensor_ && (!this->prev_status_ || this->prev_status_->msgs_to_tx != status.msgs_to_tx)) {
       this->msgs_to_tx_sensor_->publish_state(status.msgs_to_tx);
@@ -251,13 +254,20 @@ void ESP32Can::loop() {
     }
 #endif  // USE_TEXT_SENSOR
   }
-#endif  // defined(USE_SENSOR) || defined(USE_TEXT_SENSOR)
 
   canbus::Canbus::loop();
 }
 
-esp_err_t ESP32Can::start() { return twai_start(); }
-esp_err_t ESP32Can::stop() { return twai_stop(); }
+esp_err_t ESP32Can::start() {
+  this->enabled_ = true;
+  return twai_start();
+}
+
+esp_err_t ESP32Can::stop() {
+  this->enabled_ = false;
+  return twai_stop();
+}
+
 esp_err_t ESP32Can::initiate_recovery() { return twai_initiate_recovery(); }
 
 bool ESP32Can::install_and_start_() {
@@ -277,12 +287,14 @@ bool ESP32Can::install_and_start_() {
       return false;
   }
 
-  ESP_LOGV(TAG, "Start TWAI driver");
-  const auto start_err = this->start();
-  if (start_err != ESP_OK) {
-    ESP_LOGE(TAG, "Failed to start driver: %s", esp_err_to_name(start_err));
-    this->mark_failed();
-    return false;
+  if (this->enabled_) {
+    ESP_LOGV(TAG, "Start TWAI driver");
+    const auto start_err = this->start();
+    if (start_err != ESP_OK) {
+      ESP_LOGE(TAG, "Failed to start driver: %s", esp_err_to_name(start_err));
+      this->mark_failed();
+      return false;
+    }
   }
 
   return true;
