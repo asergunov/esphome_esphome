@@ -115,7 +115,7 @@ static constexpr std::array<uint32_t, 21> BITS_PER_SECOND{
 };
 
 uint32_t Canbus::set_bits_per_second(uint32_t arg) {
-  const auto *i = std::ranges::lower_bound(BITS_PER_SECOND, arg);
+  const auto *i = std::lower_bound(BITS_PER_SECOND.begin(), BITS_PER_SECOND.end(), arg);
   if (i == BITS_PER_SECOND.end()) {
     --i;
   }
