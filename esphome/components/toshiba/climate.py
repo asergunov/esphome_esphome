@@ -14,9 +14,10 @@ MODELS = {
     "GENERIC": Model.MODEL_GENERIC,
     "RAC-PT1411HWRU-C": Model.MODEL_RAC_PT1411HWRU_C,
     "RAC-PT1411HWRU-F": Model.MODEL_RAC_PT1411HWRU_F,
+    "RAS-2819T": Model.MODEL_RAS_2819T,
 }
 
-CONFIG_SCHEMA = climate_ir.climare_ir_with_receiver_schema(ToshibaClimate).extend(
+CONFIG_SCHEMA = climate_ir.climate_ir_with_receiver_schema(ToshibaClimate).extend(
     {
         cv.Optional(CONF_MODEL, default="generic"): cv.enum(MODELS, upper=True),
     }
